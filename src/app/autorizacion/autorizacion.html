@@ -36,8 +36,6 @@
 
   <div class="forms-container">
     <div class="form-wrapper" [class.show-signup]="mostrarRegistro">
-      
-      <!-- FORMULARIO DE LOGIN -->
       <div class="form-box" id="loginForm">
         <div class="switch-text">
           ¿No tienes cuenta? <a (click)="mostrarFormularioRegistro()">Regístrate</a>
@@ -111,8 +109,6 @@
           </div>
         </form>
       </div>
-
-      <!-- FORMULARIO DE REGISTRO -->
       <div class="form-box" id="signupForm">
         <div class="switch-text">
           ¿Ya tienes cuenta? <a (click)="mostrarLogin()">Inicia sesión</a>
@@ -320,15 +316,10 @@
             [disabled]="!registroForm.valid || cargando">
             {{ cargando ? 'Procesando...' : 'Registrarse' }}
           </button>
-          <div class="form-footer">
-            <a (click)="verTerminos()">Términos y condiciones</a>
-          </div>
         </form>
       </div>
     </div>
   </div>
-
-  <!-- Indicador de carga -->
   @if (cargando) {
     <div class="loading-overlay">
       <div class="spinner"></div>
@@ -336,7 +327,6 @@
     </div>
   }
 
-  <!-- Sistema de notificaciones -->
   <div class="notification-container" 
        [class.show]="mostrarNotificacion" 
        [class.success]="tipoNotificacion === 'success'" 
@@ -369,13 +359,11 @@
     </div>
   </div>
 
-  <!-- 🆕 MODAL DE RECUPERACIÓN DE CONTRASEÑA -->
   @if (mostrarModalRecuperacion) {
     <div class="modal-overlay" (click)="cerrarModalRecuperacion()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <button class="modal-close" (click)="cerrarModalRecuperacion()">×</button>
-        
-        <!-- PASO 1: Solicitar código -->
+
         @if (pasoRecuperacion === 1) {
           <div class="modal-step">
             <div class="modal-icon">🔐</div>
@@ -414,8 +402,7 @@
             </form>
           </div>
         }
-        
-        <!-- PASO 2: Verificar código y nueva contraseña -->
+
         @if (pasoRecuperacion === 2) {
           <div class="modal-step">
             <button class="back-button-modal" (click)="volverPasoAnterior()">← Volver</button>
