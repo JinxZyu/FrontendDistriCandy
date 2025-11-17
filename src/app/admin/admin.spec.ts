@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { AdminComponent } from './admin';
 
 describe('AdminComponent', () => {
@@ -7,7 +8,8 @@ describe('AdminComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AdminComponent]
+      declarations: [AdminComponent],
+      imports: [RouterTestingModule]
     })
     .compileComponents();
 
@@ -18,5 +20,14 @@ describe('AdminComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should change view when changeView is called', () => {
+    component.changeView('producto');
+    expect(component.selectedView).toBe('producto');
+  });
+
+  it('should have empty selectedView by default', () => {
+    expect(component.selectedView).toBe('');
   });
 });

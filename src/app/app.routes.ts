@@ -19,6 +19,12 @@ path: 'admin',
   canActivate: [guardRol],
   loadComponent: () => import('./admin/admin').then(m => m.AdminComponent)
 },
+{
+    path: 'admin',  
+    canActivate: [guardRol],
+    loadComponent: () => import('./admin/admin').then(m => m.AdminComponent)
+    // Ya no necesitas rutas hijas porque todo se maneja internamente en AdminComponent
+  },
 //   {
 //     path: 'login',
 //     canActivate: [autorizacionRedirectGuard],

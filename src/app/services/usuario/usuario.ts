@@ -115,6 +115,7 @@ export class UsuarioService {
       return null;
     }
 
+
     if (usuario.tipo_usuario === TipoUsuario.ADMIN) {
       return 'admin';
     }
@@ -132,6 +133,7 @@ export class UsuarioService {
     return !!(token && usuario);
   }
 
+  
   esAdmin(): boolean {
     return this.obtenerRol() === 'admin';
   }

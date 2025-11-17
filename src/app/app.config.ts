@@ -1,10 +1,8 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-<<<<<<< HEAD
-import { LucideAngularModule } from 'lucide-angular';
-=======
+
 import { provideHttpClient, withFetch } from '@angular/common/http';
->>>>>>> origin/Sophia
+
 
 import { routes } from './app.routes';
 
