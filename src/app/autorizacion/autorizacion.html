@@ -1,1 +1,366 @@
-<p>autorizacion works!</p>
+<div class="container">
+  <div class="background"></div>
+  
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" fill="#9b7eb5" opacity="0.15"/>
+          <circle cx="14" cy="12" r="3.5" fill="#9b7eb5"/>
+          <circle cx="26" cy="12" r="3.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="16" rx="7" ry="6.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="25" rx="6" ry="7" fill="#9b7eb5"/>
+          <ellipse cx="14" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="26" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="17" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <ellipse cx="23" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <circle cx="18" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <circle cx="22" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <ellipse cx="17" cy="14" rx="3" ry="4" fill="white" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="distri">Distri</span><span class="candy">Candy</span>
+      </div>
+    </div>
+    <nav>
+      <a href="#" class="active">Inicio</a>
+      <a href="#">Productos</a>
+      <a href="#">Nosotros</a>
+    </nav>
+    <div class="auth-buttons">
+      <button (click)="mostrarLogin()">Iniciar Sesión</button>
+      <button (click)="mostrarFormularioRegistro()">Registrarse</button>
+    </div>
+  </header>
+
+  <div class="forms-container">
+    <div class="form-wrapper" [class.show-signup]="mostrarRegistro">
+      
+      <!-- FORMULARIO DE LOGIN -->
+      <div class="form-box" id="loginForm">
+        <div class="switch-text">
+          ¿No tienes cuenta? <a (click)="mostrarFormularioRegistro()">Regístrate</a>
+        </div>
+        <h2>Iniciar Sesión</h2>
+        <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+          <div class="input-group">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </span>
+              <input 
+                type="email" 
+                placeholder="Correo electrónico" 
+                [(ngModel)]="loginData.correo"
+                name="correo"
+                #correoLogin="ngModel"
+                email
+                required
+                [class.invalid]="correoLogin.invalid && correoLogin.touched">
+              @if (correoLogin.invalid && correoLogin.touched) {
+                <div class="error-message">
+                  @if (correoLogin.errors?.['required']) {
+                    <span>El correo es obligatorio</span>
+                  }
+                  @if (correoLogin.errors?.['email']) {
+                    <span>Ingresa un correo válido</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                </svg>
+              </span>
+              <input 
+                type="password" 
+                placeholder="Contraseña"
+                [(ngModel)]="loginData.clave"
+                name="clave"
+                #claveLogin="ngModel"
+                minlength="6"
+                required
+                [class.invalid]="claveLogin.invalid && claveLogin.touched">
+              @if (claveLogin.invalid && claveLogin.touched) {
+                <div class="error-message">
+                  @if (claveLogin.errors?.['required']) {
+                    <span>La contraseña es obligatoria</span>
+                  }
+                  @if (claveLogin.errors?.['minlength']) {
+                    <span>Mínimo 6 caracteres</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <button 
+            type="submit" 
+            class="submit-btn"
+            [disabled]="!loginForm.valid || cargando">
+            {{ cargando ? 'Ingresando...' : 'Ingresar' }}
+          </button>
+          <div class="form-footer">
+            <a (click)="olvidoClave()">¿Olvidaste tu contraseña?</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- FORMULARIO DE REGISTRO -->
+      <div class="form-box" id="signupForm">
+        <div class="switch-text">
+          ¿Ya tienes cuenta? <a (click)="mostrarLogin()">Inicia sesión</a>
+        </div>
+        <h2>Registrarse</h2>
+        <form #registroForm="ngForm" (ngSubmit)="onRegistro(registroForm)">
+          <div class="input-group">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                placeholder="Nombre"
+                [(ngModel)]="registroData.nombre"
+                name="nombre"
+                #nombre="ngModel"
+                minlength="2"
+                maxlength="100"
+                required
+                [class.invalid]="nombre.invalid && nombre.touched">
+              @if (nombre.invalid && nombre.touched) {
+                <div class="error-message">
+                  @if (nombre.errors?.['required']) {
+                    <span>El nombre es obligatorio</span>
+                  }
+                  @if (nombre.errors?.['minlength']) {
+                    <span>Mínimo 2 caracteres</span>
+                  }
+                </div>
+              }
+            </div>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                placeholder="Apellido"
+                [(ngModel)]="registroData.apellido"
+                name="apellido"
+                #apellido="ngModel"
+                minlength="2"
+                maxlength="100"
+                required
+                [class.invalid]="apellido.invalid && apellido.touched">
+              @if (apellido.invalid && apellido.touched) {
+                <div class="error-message">
+                  @if (apellido.errors?.['required']) {
+                    <span>El apellido es obligatorio</span>
+                  }
+                  @if (apellido.errors?.['minlength']) {
+                    <span>Mínimo 2 caracteres</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                </svg>
+              </span>
+              <select 
+                class="select-input" 
+                [(ngModel)]="registroData.tipo_documento"
+                name="tipo_documento"
+                #tipoDoc="ngModel"
+                required
+                [class.invalid]="tipoDoc.invalid && tipoDoc.touched">
+                <option value="" disabled selected hidden>Tipo Doc.</option>
+                <option value="CC">CC</option>
+                <option value="TI">TI</option>
+              </select>
+              @if (tipoDoc.invalid && tipoDoc.touched) {
+                <div class="error-message">
+                  <span>Selecciona un tipo </span>
+                </div>
+              }
+            </div>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h8v2H6zm10-4h2v6h-2z"/>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                placeholder="Número de identificación"
+                [(ngModel)]="registroData.identificacion"
+                name="identificacion"
+                #identificacion="ngModel"
+                pattern="[0-9]{5,20}"
+                minlength="5"
+                maxlength="20"
+                required
+                [class.invalid]="identificacion.invalid && identificacion.touched">
+              @if (identificacion.invalid && identificacion.touched) {
+                <div class="error-message">
+                  @if (identificacion.errors?.['required']) {
+                    <span>La identificación es obligatoria</span>
+                  }
+                  @if (identificacion.errors?.['pattern'] || identificacion.errors?.['minlength']) {
+                    <span>Debe tener entre 5 y 20 dígitos</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zm-5-1c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1z"/>
+                </svg>
+              </span>
+              <input 
+                type="tel" 
+                placeholder="Celular"
+                [(ngModel)]="registroData.celular"
+                name="celular"
+                #celular="ngModel"
+                pattern="[0-9]{10}"
+                minlength="10"
+                maxlength="10"
+                required
+                [class.invalid]="celular.invalid && celular.touched">
+              @if (celular.invalid && celular.touched) {
+                <div class="error-message">
+                  @if (celular.errors?.['required']) {
+                    <span>El celular es obligatorio</span>
+                  }
+                  @if (celular.errors?.['pattern'] || celular.errors?.['minlength']) {
+                    <span>Debe tener 10 dígitos</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/>
+                </svg>
+              </span>
+              <input 
+                type="email" 
+                placeholder="Correo electrónico"
+                [(ngModel)]="registroData.correo"
+                name="correo"
+                #correo="ngModel"
+                email
+                required
+                [class.invalid]="correo.invalid && correo.touched">
+              @if (correo.invalid && correo.touched) {
+                <div class="error-message">
+                  @if (correo.errors?.['required']) {
+                    <span>El correo es obligatorio</span>
+                  }
+                  @if (correo.errors?.['email']) {
+                    <span>Ingresa un correo válido</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                </svg>
+              </span>
+              <input 
+                type="password" 
+                placeholder="Contraseña"
+                [(ngModel)]="registroData.clave"
+                name="clave"
+                #clave="ngModel"
+                minlength="6"
+                required
+                [class.invalid]="clave.invalid && clave.touched">
+              @if (clave.invalid && clave.touched) {
+                <div class="error-message">
+                  @if (clave.errors?.['required']) {
+                    <span>La contraseña es obligatoria</span>
+                  }
+                  @if (clave.errors?.['minlength']) {
+                    <span>Mínimo 6 caracteres</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <button 
+            type="submit" 
+            class="submit-btn"
+            [disabled]="!registroForm.valid || cargando">
+            {{ cargando ? 'Procesando...' : 'Registrarse' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  @if (cargando) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Cargando...</p>
+    </div>
+  }
+
+  <div class="notification-container" 
+       [class.show]="mostrarNotificacion" 
+       [class.success]="tipoNotificacion === 'success'" 
+       [class.error]="tipoNotificacion === 'error'" 
+       [class.warning]="tipoNotificacion === 'warning'">
+    <div class="notification-content">
+      <div class="notification-icon">
+        @if (tipoNotificacion === 'success') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'error') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'warning') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+          </svg>
+        }
+      </div>
+      <p>{{ mensajeNotificacion }}</p>
+      <button class="close-btn" (click)="cerrarNotificacion()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

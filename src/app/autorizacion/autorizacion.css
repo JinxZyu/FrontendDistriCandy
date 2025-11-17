@@ -1,0 +1,536 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  background: #fff5f4;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fde3e2 0%, #fef0ef 50%, #fff5f4 100%);
+  overflow: hidden;
+}
+
+.background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><path fill="%236b4544" d="M0,310 Q100,290 200,310 T400,310 Q500,290 600,310 T800,310 Q900,290 1000,310 T1200,310 L1200,400 L0,400 Z"/><path fill="%23533634" opacity="0.7" d="M0,340 Q150,320 300,340 T600,340 Q750,320 900,340 T1200,340 L1200,400 L0,400 Z"/></svg>') no-repeat bottom center;
+  background-size: cover;
+}
+
+header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 35px;
+  height: 35px;
+  position: relative;
+}
+
+.logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.logo-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.5px;
+}
+
+.logo-text .distri {
+  color: #6b4544;
+}
+
+.logo-text .candy {
+  color: #9b7eb5;
+}
+
+nav {
+  display: flex;
+  gap: 40px;
+}
+
+nav a {
+  color: #6b4544;
+  text-decoration: none;
+  font-size: 16px;
+  position: relative;
+  transition: all 0.3s;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
+
+nav a:hover {
+  opacity: 0.8;
+}
+
+nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #6b4544;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.auth-buttons button {
+  padding: 10px 30px;
+  border: none;
+  border-radius: 25px;
+  background: rgba(232, 169, 167, 0.3);
+  color: #6b4544;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+  letter-spacing: 0px;
+  border: 2px solid transparent;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+}
+
+.auth-buttons button:hover {
+  background: rgba(232, 169, 167, 0.5);
+  letter-spacing: 2px;
+  border: 2px solid #9b7eb5;
+}
+
+.forms-container {
+  position: absolute;
+  top: 53%;  
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  width: 420px; 
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: 500px; 
+}
+
+.form-wrapper {
+  display: flex;
+  width: 840px;  
+  transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform: translateX(0);
+}
+
+.form-wrapper.show-signup {
+  transform: translateX(-420px); 
+}
+
+.form-box {
+  min-width: 420px; 
+  width: 420px; 
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 10px;  
+}
+
+.switch-text {
+  color: #6b4544;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
+
+.switch-text a {
+  color: #d97674;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+h2 {
+  color: #6b4544;
+  font-size: 32px;
+  margin-bottom: 30px;
+  font-weight: 300;
+  font-family: 'Poppins', sans-serif;
+}
+
+.input-group {
+  margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
+}
+
+.input-group:has(select.select-input) .input-wrapper:first-child {
+  flex: 0 0 130px;
+  min-width: 130px;
+}
+
+.input-group:has(select.select-input) .input-wrapper:last-child {
+  flex: 1;
+}
+
+.input-wrapper {
+  position: relative;
+  flex: 1;
+  margin-bottom: 10px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  pointer-events: none;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+}
+
+.input-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: #9b7eb5;
+}
+
+input {
+  width: 100%;
+  padding: 15px 15px 15px 45px;
+  border: none;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.6);
+  color: #6b4544;
+  font-size: 14px;
+  outline: none;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(232, 169, 167, 0.5);
+  transition: border 0.3s, box-shadow 0.3s;
+  height: 50px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  line-height: 1.5;  
+}
+
+input:focus {
+  border: 2px solid #9b7eb5;
+  box-shadow: 0 0 10px rgba(155, 126, 181, 0.3);
+}
+
+/* ✅ Estilo para inputs inválidos */
+input.invalid,
+select.invalid {
+  border: 2px solid #e74c3c !important;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+}
+
+input::placeholder {
+  color: rgba(107, 69, 68, 0.5);
+  font-family: 'Poppins', sans-serif;
+}
+
+select.select-input {
+  width: 100%;
+  padding: 14px 40px 14px 45px; 
+  border: none;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.6);
+  color: rgba(107, 69, 68, 0.5);
+  font-size: 14px;
+  outline: none;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(232, 169, 167, 0.5);
+  transition: border 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%239b7eb5" d="M0 0l6 8 6-8z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  height: 50px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  line-height: 1.5; 
+}
+
+select.select-input:focus {
+  border: 2px solid #9b7eb5;
+  box-shadow: 0 0 10px rgba(155, 126, 181, 0.3);
+}
+
+select.select-input:valid {
+  color: #6b4544;
+}
+
+select.select-input option {
+  background: white;
+  color: #6b4544;
+  padding: 12px 15px;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.8; 
+}
+
+select.select-input option:first-child {
+  color: rgba(107, 69, 68, 0.5);
+}
+
+/* ✅ Mensajes de error */
+.error-message {
+  position: absolute;
+  top: 52px;
+  left: 20px;
+  font-size: 11px;
+  color: #e74c3c;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+  z-index: 10;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 25px;
+  background: white;
+  color: #6b4544;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s;
+  letter-spacing: 0px;
+  overflow: visible;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+  font-family: 'Poppins', sans-serif;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(155, 126, 181, 0.4);
+  letter-spacing: 2px;
+  padding: 15px 20px;
+  border: 2px solid #9b7eb5;
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 15px;
+  color: #d97674;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.form-footer a {
+  color: #d97674;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ✅ Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #9b7eb5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-overlay p {
+  color: white;
+  margin-top: 20px;
+  font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ✅ Sistema de notificaciones */
+.notification-container {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 320px;
+  max-width: 500px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 20px 25px;
+  z-index: 10000;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  opacity: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.notification-container.show {
+  top: 30px;
+  opacity: 1;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.notification-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.notification-container.success {
+  border-left: 5px solid #27ae60;
+}
+
+.notification-container.success .notification-icon {
+  background: rgba(39, 174, 96, 0.15);
+}
+
+.notification-container.success .notification-icon svg {
+  fill: #27ae60;
+}
+
+.notification-container.error {
+  border-left: 5px solid #e74c3c;
+}
+
+.notification-container.error .notification-icon {
+  background: rgba(231, 76, 60, 0.15);
+}
+
+.notification-container.error .notification-icon svg {
+  fill: #e74c3c;
+}
+
+.notification-container.warning {
+  border-left: 5px solid #f39c12;
+}
+
+.notification-container.warning .notification-icon {
+  background: rgba(243, 156, 18, 0.15);
+}
+
+.notification-container.warning .notification-icon svg {
+  fill: #f39c12;
+}
+
+.notification-content p {
+  flex: 1;
+  margin: 0;
+  color: #6b4544;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.close-btn {
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  background: rgba(107, 69, 68, 0.1);
+}
+
+.close-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: #6b4544;
+  opacity: 0.6;
+}
+
+.close-btn:hover svg {
+  opacity: 1;
+}
