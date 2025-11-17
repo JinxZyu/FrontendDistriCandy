@@ -4,42 +4,90 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Usuario, TipoUsuario, CredencialesLogin, RespuestaLogin } from '../../models/usuario.model';
 
+interface SolicitudCodigo {
+  correo: string;
+}
+
+interface RespuestaRecuperacion {
+  exito: boolean;
+  mensaje?: string;
+  error?: string;
+}
+
+interface RestablecerContrasena {
+  correo: string;
+  codigo: string;
+  nueva_clave: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class UsuarioService {
-  private urlApi = 'http://localhost:8093/DistriCandy/usuario/iniciarSesion';
+  private urlBase = 'http://localhost:8093/DistriCandy/usuario';
   private claveToken = 'auth_token';
   private claveUsuario = 'auth_user';
 
   constructor(private http: HttpClient) {}
+
 
   iniciarSesion(credenciales: CredencialesLogin): Observable<RespuestaLogin> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
 
-    return this.http.post<RespuestaLogin>(this.urlApi, credenciales, { headers }).pipe(
+    return this.http.post<RespuestaLogin>(`${this.urlBase}/iniciarSesion`, credenciales, { headers }).pipe(
       tap((respuesta) => {
         if (respuesta.exito && respuesta.usuario) {
-          // ✅ Guardar token (en el futuro debería ser JWT real)
+
           if (respuesta.isAdmin === true) {
             localStorage.setItem(this.claveToken, 'admin-token');
           } else {
             localStorage.setItem(this.claveToken, 'user-token');
           }
-          
-          // ✅ Guardar usuario (estructura consistente para admin y usuario)
+  
           localStorage.setItem(this.claveUsuario, JSON.stringify(respuesta.usuario));
         }
       })
     );
   }
 
+  registrarCliente(datos: any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<any>(`${this.urlBase}/registro`, datos, { headers });
+  }
+
   cerrarSesion(): void {
     localStorage.removeItem(this.claveToken);
     localStorage.removeItem(this.claveUsuario);
   }
+
+
+  solicitarCodigoRecuperacion(correo: string): Observable<RespuestaRecuperacion> {
+    const body: SolicitudCodigo = { correo };
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<RespuestaRecuperacion>(`${this.urlBase}/recuperarClave`, body, { headers });
+  }
+
+  restablecerContrasena(correo: string, codigo: string, nuevaClave: string): Observable<RespuestaRecuperacion> {
+    const body: RestablecerContrasena = {
+      correo,
+      codigo,
+      nueva_clave: nuevaClave
+    };
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<RespuestaRecuperacion>(`${this.urlBase}/reestablecerClave`, body, { headers });
+  }
+
 
   obtenerToken(): string | null {
     return localStorage.getItem(this.claveToken);
@@ -67,7 +115,6 @@ export class UsuarioService {
       return null;
     }
 
-    // ✅ Verificar usando el tipo_usuario (número)
     if (usuario.tipo_usuario === TipoUsuario.ADMIN) {
       return 'admin';
     }
@@ -85,7 +132,6 @@ export class UsuarioService {
     return !!(token && usuario);
   }
 
-  // Métodos auxiliares
   esAdmin(): boolean {
     return this.obtenerRol() === 'admin';
   }

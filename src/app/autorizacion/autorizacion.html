@@ -195,7 +195,7 @@
               </select>
               @if (tipoDoc.invalid && tipoDoc.touched) {
                 <div class="error-message">
-                  <span>Selecciona un tipo </span>
+                  <span>Selecciona un tipo de documento</span>
                 </div>
               }
             </div>
@@ -320,11 +320,15 @@
             [disabled]="!registroForm.valid || cargando">
             {{ cargando ? 'Procesando...' : 'Registrarse' }}
           </button>
+          <div class="form-footer">
+            <a (click)="verTerminos()">Términos y condiciones</a>
+          </div>
         </form>
       </div>
     </div>
   </div>
 
+  <!-- Indicador de carga -->
   @if (cargando) {
     <div class="loading-overlay">
       <div class="spinner"></div>
@@ -332,6 +336,7 @@
     </div>
   }
 
+  <!-- Sistema de notificaciones -->
   <div class="notification-container" 
        [class.show]="mostrarNotificacion" 
        [class.success]="tipoNotificacion === 'success'" 
@@ -363,4 +368,130 @@
       </button>
     </div>
   </div>
+
+  <!-- 🆕 MODAL DE RECUPERACIÓN DE CONTRASEÑA -->
+  @if (mostrarModalRecuperacion) {
+    <div class="modal-overlay" (click)="cerrarModalRecuperacion()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="cerrarModalRecuperacion()">×</button>
+        
+        <!-- PASO 1: Solicitar código -->
+        @if (pasoRecuperacion === 1) {
+          <div class="modal-step">
+            <div class="modal-icon">🔐</div>
+            <h3>Recuperar Contraseña</h3>
+            <p class="modal-subtitle">Ingresa tu correo y te enviaremos un código</p>
+            
+            <form #recuperacionPaso1="ngForm" (ngSubmit)="solicitarCodigoRecuperacion(recuperacionPaso1)">
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/>
+                  </svg>
+                </span>
+                <input 
+                  type="email" 
+                  placeholder="Correo electrónico"
+                  [(ngModel)]="correoRecuperacion"
+                  name="correoRecuperacion"
+                  #correoRec="ngModel"
+                  email
+                  required
+                  [class.invalid]="correoRec.invalid && correoRec.touched">
+                @if (correoRec.invalid && correoRec.touched) {
+                  <div class="error-message">
+                    <span>Ingresa un correo válido</span>
+                  </div>
+                }
+              </div>
+              
+              <button 
+                type="submit" 
+                class="submit-btn"
+                [disabled]="!recuperacionPaso1.valid || cargando">
+                {{ cargando ? 'Enviando...' : 'Enviar código' }}
+              </button>
+            </form>
+          </div>
+        }
+        
+        <!-- PASO 2: Verificar código y nueva contraseña -->
+        @if (pasoRecuperacion === 2) {
+          <div class="modal-step">
+            <button class="back-button-modal" (click)="volverPasoAnterior()">← Volver</button>
+            
+            <div class="modal-icon">✉️</div>
+            <h3>Verificar Código</h3>
+            <p class="modal-subtitle">Revisa tu correo <strong>{{ correoRecuperacion }}</strong></p>
+            
+            <form #recuperacionPaso2="ngForm" (ngSubmit)="restablecerConCodigo(recuperacionPaso2)">
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6zM18 20H6V10h12v10z"/>
+                  </svg>
+                </span>
+                <input 
+                  type="text" 
+                  placeholder="Código de 6 dígitos"
+                  [(ngModel)]="codigoRecuperacion"
+                  name="codigoRecuperacion"
+                  #codigoRec="ngModel"
+                  minlength="6"
+                  maxlength="6"
+                  required
+                  [class.invalid]="codigoRec.invalid && codigoRec.touched">
+              </div>
+              
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                  </svg>
+                </span>
+                <input 
+                  type="password" 
+                  placeholder="Nueva contraseña"
+                  [(ngModel)]="nuevaClaveRecuperacion"
+                  name="nuevaClaveRecuperacion"
+                  #nuevaClaveRec="ngModel"
+                  minlength="6"
+                  required
+                  [class.invalid]="nuevaClaveRec.invalid && nuevaClaveRec.touched">
+              </div>
+              
+              <div class="input-wrapper">
+                <span class="input-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                  </svg>
+                </span>
+                <input 
+                  type="password" 
+                  placeholder="Confirmar contraseña"
+                  [(ngModel)]="confirmarClaveRecuperacion"
+                  name="confirmarClaveRecuperacion"
+                  #confirmarClaveRec="ngModel"
+                  minlength="6"
+                  required
+                  [class.invalid]="(confirmarClaveRec.invalid && confirmarClaveRec.touched) || (nuevaClaveRecuperacion !== confirmarClaveRecuperacion && confirmarClaveRec.touched)">
+                @if (nuevaClaveRecuperacion !== confirmarClaveRecuperacion && confirmarClaveRec.touched) {
+                  <div class="error-message">
+                    <span>Las contraseñas no coinciden</span>
+                  </div>
+                }
+              </div>
+              
+              <button 
+                type="submit" 
+                class="submit-btn"
+                [disabled]="!recuperacionPaso2.valid || cargando || nuevaClaveRecuperacion !== confirmarClaveRecuperacion">
+                {{ cargando ? 'Restableciendo...' : 'Restablecer' }}
+              </button>
+            </form>
+          </div>
+        }
+      </div>
+    </div>
+  }
 </div>

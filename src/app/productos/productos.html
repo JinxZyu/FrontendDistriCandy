@@ -1,12 +1,181 @@
-<div style="padding: 40px; text-align: center; font-family: 'Poppins', sans-serif;">
-  <h1 style="color: #6b4544;">🍬 DistriCandy - Tienda</h1>
-  <p style="color: #9b7eb5; font-size: 18px; margin: 20px 0;">
-    ¡Bienvenido, {{ nombreUsuario }}!
-  </p>
-  <p style="margin: 20px 0;">Esta es una página temporal de la tienda.</p>
-  <button 
-    (click)="cerrarSesion()"
-    style="padding: 12px 30px; background: #e74c3c; color: white; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; margin-top: 20px;">
-    Cerrar Sesión
-  </button>
+<div class="container">
+  <div class="background"></div>
+  
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" fill="#9b7eb5" opacity="0.15"/>
+          <circle cx="14" cy="12" r="3.5" fill="#9b7eb5"/>
+          <circle cx="26" cy="12" r="3.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="16" rx="7" ry="6.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="25" rx="6" ry="7" fill="#9b7eb5"/>
+          <ellipse cx="14" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="26" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="17" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <ellipse cx="23" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <circle cx="18" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <circle cx="22" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <ellipse cx="17" cy="14" rx="3" ry="4" fill="white" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="distri">Distri</span><span class="candy">Candy</span>
+      </div>
+    </div>
+    <nav>
+      <a href="#" class="active">Tienda</a>
+      <a href="#">Mis Pedidos</a>
+      <a href="#">Mi Cuenta</a>
+    </nav>
+    <div class="auth-buttons">
+      <button class="cart-button">
+        🛒 Carrito ({{ totalCarrito }})
+      </button>
+      <button (click)="cerrarSesion()">Salir</button>
+    </div>
+  </header>
+
+  <!-- Bienvenida -->
+  <div class="welcome-section">
+    <h1>¡Hola, {{ nombreUsuario }}! 🍬</h1>
+    <p>Descubre nuestra deliciosa selección de dulces</p>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="filters-section">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Buscar dulces..."
+        [(ngModel)]="busqueda"
+        (input)="filtrarProductos()">
+    </div>
+    <div class="category-filters">
+      <button 
+        [class.active]="categoriaSeleccionada === 'todos'"
+        (click)="filtrarPorCategoria('todos')">
+        Todos
+      </button>
+      <button 
+        [class.active]="categoriaSeleccionada === 'chocolates'"
+        (click)="filtrarPorCategoria('chocolates')">
+        🍫 Chocolates
+      </button>
+      <button 
+        [class.active]="categoriaSeleccionada === 'gomitas'"
+        (click)="filtrarPorCategoria('gomitas')">
+        🐻 Gomitas
+      </button>
+      <button 
+        [class.active]="categoriaSeleccionada === 'caramelos'"
+        (click)="filtrarPorCategoria('caramelos')">
+        🍭 Caramelos
+      </button>
+      <button 
+        [class.active]="categoriaSeleccionada === 'chicles'"
+        (click)="filtrarPorCategoria('chicles')">
+        🎈 Chicles
+      </button>
+    </div>
+  </div>
+
+  <!-- Grid de productos -->
+  <div class="products-container">
+    @if (cargando) {
+      <div class="loading-products">
+        <div class="spinner"></div>
+        <p>Cargando productos deliciosos...</p>
+      </div>
+    } @else if (productosFiltrados.length === 0) {
+      <div class="no-products">
+        <p>😢 No se encontraron productos</p>
+      </div>
+    } @else {
+      <div class="products-grid">
+        @for (producto of productosFiltrados; track producto.id) {
+          <div class="product-card">
+            <div class="product-image">
+              <img [src]="producto.imagen" [alt]="producto.nombre">
+              @if (producto.descuento > 0) {
+                <span class="discount-badge">-{{ producto.descuento }}%</span>
+              }
+            </div>
+            <div class="product-info">
+              <h3>{{ producto.nombre }}</h3>
+              <p class="product-description">{{ producto.descripcion }}</p>
+              <div class="product-price">
+                @if (producto.descuento > 0) {
+                  <span class="price-original">${{ producto.precio }}</span>
+                  <span class="price-current">${{ calcularPrecioConDescuento(producto) }}</span>
+                } @else {
+                  <span class="price-current">${{ producto.precio }}</span>
+                }
+              </div>
+              <div class="product-stock">
+                @if (producto.stock > 10) {
+                  <span class="stock-disponible">✓ Disponible</span>
+                } @else if (producto.stock > 0) {
+                  <span class="stock-pocos">⚠️ Últimas unidades</span>
+                } @else {
+                  <span class="stock-agotado">✗ Agotado</span>
+                }
+              </div>
+              <div class="product-actions">
+                <div class="quantity-selector">
+                  <button (click)="disminuirCantidad(producto)" [disabled]="getCantidad(producto) <= 1">-</button>
+                  <span>{{ getCantidad(producto) }}</span>
+                  <button (click)="aumentarCantidad(producto)" [disabled]="getCantidad(producto) >= producto.stock">+</button>
+                </div>
+                <button 
+                  class="add-to-cart-btn"
+                  (click)="agregarAlCarrito(producto)"
+                  [disabled]="producto.stock === 0">
+                  @if (producto.stock > 0) {
+                    <span>🛒 Agregar</span>
+                  } @else {
+                    <span>Agotado</span>
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Sistema de notificaciones -->
+  <div class="notification-container" 
+       [class.show]="mostrarNotificacion" 
+       [class.success]="tipoNotificacion === 'success'" 
+       [class.error]="tipoNotificacion === 'error'" 
+       [class.warning]="tipoNotificacion === 'warning'">
+    <div class="notification-content">
+      <div class="notification-icon">
+        @if (tipoNotificacion === 'success') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'error') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'warning') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+          </svg>
+        }
+      </div>
+      <p>{{ mensajeNotificacion }}</p>
+      <button class="close-btn" (click)="cerrarNotificacion()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 </div>
