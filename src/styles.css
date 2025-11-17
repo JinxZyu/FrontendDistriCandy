@@ -1,1 +1,26 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+
+body {
+  background: #fef0ef;
+}
+
+/* Quitar margen del app-root */
+app-root {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Quitar margen de router-outlet */
+router-outlet {
+  display: none;
+}
