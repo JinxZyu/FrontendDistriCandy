@@ -34,7 +34,7 @@ export const routes: Routes = [
   {
     path: 'tienda',
     canActivate: [guardRol],
-    loadComponent: () => import('./productos/productos').then(m => m.TiendaComponent)
+    loadComponent: () => import('./tienda/tienda').then(m => m.TiendaComponent)
   },
 //   {
 //     path: 'dulces',

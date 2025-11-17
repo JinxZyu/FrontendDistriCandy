@@ -416,7 +416,6 @@ select.select-input option:first-child {
   font-family: 'Poppins', sans-serif;
 }
 
-/* Sistema de notificaciones - CON Z-INDEX MAYOR AL MODAL */
 .notification-container {
   position: fixed;
   top: -100px;
@@ -428,7 +427,7 @@ select.select-input option:first-child {
   border-radius: 15px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   padding: 20px 25px;
-  z-index: 10002; /* ⬅️ MAYOR que modal (10001) */
+  z-index: 10002;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   opacity: 0;
   font-family: 'Poppins', sans-serif;
@@ -613,10 +612,9 @@ select.select-input option:first-child {
 .modal-icon {
   font-size: 56px;
   margin-bottom: 20px;
-  /* Animación flotante eliminada */
+
 }
 
-/* @keyframes bounce eliminado */
 
 .modal-content h3 {
   color: #6b4544;
@@ -669,7 +667,6 @@ select.select-input option:first-child {
   transform: translateX(-3px);
 }
 
-/* Responsive para modal */
 @media (max-width: 500px) {
   .modal-content {
     padding: 30px 20px;

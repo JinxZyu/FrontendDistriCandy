@@ -1,0 +1,363 @@
+<div class="container">
+  <div class="background"></div>
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" fill="#9b7eb5" opacity="0.15"/>
+          <circle cx="14" cy="12" r="3.5" fill="#9b7eb5"/>
+          <circle cx="26" cy="12" r="3.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="16" rx="7" ry="6.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="25" rx="6" ry="7" fill="#9b7eb5"/>
+          <ellipse cx="14" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="26" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="17" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <ellipse cx="23" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <circle cx="18" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <circle cx="22" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <ellipse cx="17" cy="14" rx="3" ry="4" fill="white" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="distri">Distri</span><span class="candy">Candy</span>
+      </div>
+    </div>
+    
+    <nav>
+      <a href="#" class="active">Tienda</a>
+      <a href="#">Mis Pedidos</a>
+      <a href="#">Mi Cuenta</a>
+    </nav>
+    
+    <div class="auth-buttons">
+      <button class="cart-button">
+        <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+        Carrito ({{ totalCarrito }})
+      </button>
+      <button (click)="cerrarSesion()">Salir</button>
+    </div>
+  </header>
+  <div class="welcome-section">
+    <h1>
+      <span>¡Hola, {{ nombreUsuario }}!</span>
+      <svg class="candy-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="8" fill="#e8a9a7" opacity="0.3"/>
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="#9b7eb5"/>
+        <circle cx="9" cy="10" r="1.5" fill="#9b7eb5"/>
+        <circle cx="15" cy="10" r="1.5" fill="#9b7eb5"/>
+        <path d="M12 17.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" fill="#9b7eb5"/>
+      </svg>
+    </h1>
+    <p>Descubre nuestra deliciosa selección de dulces</p>
+  </div>
+  <div class="filters-section">
+    <div class="search-bar">
+      <svg class="search-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Buscar dulces..."
+        [(ngModel)]="busqueda"
+        (input)="filtrarPorBusqueda()">
+    </div>
+    <div class="category-dropdown">
+      <button class="category-dropdown-btn" (click)="toggleDropdownCategorias()">
+        <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+        </svg>
+        Categorías
+        <svg class="arrow-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 10l5 5 5-5z"/>
+        </svg>
+      </button>
+      @if (dropdownCategorias) {
+        <div class="category-dropdown-menu" (click)="$event.stopPropagation()">
+          @for (categoria of categorias; track categoria.idCategoria) {
+            @if (categoriaHasProductos(categoria.idCategoria!)) {
+              <div class="category-dropdown-item" (click)="navegarACategoria(categoria.idCategoria!)">
+                <span>{{ categoria.nombre }}</span>
+                <span class="item-count">{{ getProductosPorCategoria(categoria.idCategoria!).length }}</span>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="carousels-container">
+    @if (cargando) {
+      <div class="loading-products">
+        <div class="spinner"></div>
+        <p>Cargando productos deliciosos...</p>
+      </div>
+    } @else {
+      
+      @if (getProductosConDescuento().length > 0) {
+        <div class="carousel-section" id="carousel-descuentos">
+          <div class="carousel-header">
+            <h2>
+              <svg class="section-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+              </svg>
+              Productos en Descuento
+            </h2>
+            <p class="carousel-subtitle">¡Aprovecha estas ofertas especiales!</p>
+          </div>
+          
+          <div class="carousel-wrapper">
+            <button 
+              class="carousel-btn prev" 
+              (click)="prevSlide('descuentos')"
+              [disabled]="isPrevDisabled('descuentos')">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+              </svg>
+            </button>
+            
+            <div class="carousel-track-container">
+              <div class="carousel-track" [style.transform]="getCarouselTransform('descuentos')">
+                @for (producto of getProductosConDescuento(); track producto.idProducto) {
+                  <div class="product-card">
+                    <div class="product-image">
+                      <img [src]="producto.imagen" [alt]="producto.nombre">
+                      @if (producto.valorDescuento && producto.valorDescuento > 0) {
+                        <span class="discount-badge">-{{ obtenerPorcentajeDescuento(producto) }}%</span>
+                      }
+                    </div>
+                    <div class="product-info">
+                      <h3>{{ producto.nombre }}</h3>
+                      <p class="product-description">{{ producto.descripcion }}</p>
+                      <div class="product-price">
+                        @if (producto.valorDescuento && producto.valorDescuento > 0) {
+                          <span class="price-original">${{ producto.precioUnitario }}</span>
+                          <span class="price-current">${{ calcularPrecioConDescuento(producto) }}</span>
+                        } @else {
+                          <span class="price-current">${{ producto.precioUnitario }}</span>
+                        }
+                      </div>
+                      <div class="product-stock">
+                        @if ((producto.existencia || 0) > 10) {
+                          <span class="stock-disponible">
+                            <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                            Disponible
+                          </span>
+                        } @else if ((producto.existencia || 0) > 0) {
+                          <span class="stock-pocos">
+                            <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                            </svg>
+                            Solo {{ producto.existencia }}
+                          </span>
+                        } @else {
+                          <span class="stock-agotado">
+                            <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                            Agotado
+                          </span>
+                        }
+                      </div>
+                      <div class="product-actions">
+                        <div class="quantity-selector">
+                          <button (click)="disminuirCantidad(producto)" [disabled]="getCantidad(producto) <= 1">-</button>
+                          <span>{{ getCantidad(producto) }}</span>
+                          <button (click)="aumentarCantidad(producto)" [disabled]="getCantidad(producto) >= (producto.existencia || 0)">+</button>
+                        </div>
+                        <button 
+                          class="add-to-cart-btn"
+                          (click)="agregarAlCarrito(producto)"
+                          [disabled]="(producto.existencia || 0) === 0">
+                          @if ((producto.existencia || 0) > 0) {
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
+                          } @else {
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+            
+            <button 
+              class="carousel-btn next" 
+              (click)="nextSlide('descuentos')"
+              [disabled]="isNextDisabled('descuentos')">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="carousel-indicators">
+            @for (indicator of getIndicators('descuentos'); track indicator) {
+              <button 
+                class="indicator"
+                [class.active]="getCurrentSlide('descuentos') === indicator"
+                (click)="goToSlide('descuentos', indicator)">
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @for (categoria of categorias; track categoria.idCategoria) {
+        @if (categoriaHasProductos(categoria.idCategoria!)) {
+          <div class="carousel-section" [id]="'carousel-categoria-' + categoria.idCategoria">
+            <div class="carousel-header">
+              <h2>{{ categoria.nombre }}</h2>
+              @if (categoria.descripcion) {
+                <p class="carousel-subtitle">{{ categoria.descripcion }}</p>
+              }
+            </div>
+            
+            <div class="carousel-wrapper">
+              <button 
+                class="carousel-btn prev" 
+                (click)="prevSlide('categoria-' + categoria.idCategoria)"
+                [disabled]="isPrevDisabled('categoria-' + categoria.idCategoria)">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+              </button>
+              
+              <div class="carousel-track-container">
+                <div class="carousel-track" [style.transform]="getCarouselTransform('categoria-' + categoria.idCategoria)">
+                  @for (producto of getProductosPorCategoria(categoria.idCategoria!); track producto.idProducto) {
+                    <div class="product-card">
+                      <div class="product-image">
+                        <img [src]="producto.imagen" [alt]="producto.nombre">
+                        @if (producto.valorDescuento && producto.valorDescuento > 0) {
+                          <span class="discount-badge">-{{ obtenerPorcentajeDescuento(producto) }}%</span>
+                        }
+                      </div>
+                      <div class="product-info">
+                        <h3>{{ producto.nombre }}</h3>
+                        <p class="product-description">{{ producto.descripcion }}</p>
+                        <div class="product-price">
+                          @if (producto.valorDescuento && producto.valorDescuento > 0) {
+                            <span class="price-original">${{ producto.precioUnitario }}</span>
+                            <span class="price-current">${{ calcularPrecioConDescuento(producto) }}</span>
+                          } @else {
+                            <span class="price-current">${{ producto.precioUnitario }}</span>
+                          }
+                        </div>
+                        <div class="product-stock">
+                          @if ((producto.existencia || 0) > 10) {
+                            <span class="stock-disponible">
+                              <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                              </svg>
+                              Disponible
+                            </span>
+                          } @else if ((producto.existencia || 0) > 0) {
+                            <span class="stock-pocos">
+                              <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                              </svg>
+                              Solo {{ producto.existencia }}
+                            </span>
+                          } @else {
+                            <span class="stock-agotado">
+                              <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                              </svg>
+                              Agotado
+                            </span>
+                          }
+                        </div>
+                        <div class="product-actions">
+                          <div class="quantity-selector">
+                            <button (click)="disminuirCantidad(producto)" [disabled]="getCantidad(producto) <= 1">-</button>
+                            <span>{{ getCantidad(producto) }}</span>
+                            <button (click)="aumentarCantidad(producto)" [disabled]="getCantidad(producto) >= (producto.existencia || 0)">+</button>
+                          </div>
+                          <button 
+                            class="add-to-cart-btn"
+                            (click)="agregarAlCarrito(producto)"
+                            [disabled]="(producto.existencia || 0) === 0">
+                            @if ((producto.existencia || 0) > 0) {
+                              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                              </svg>
+                            } @else {
+                              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                              </svg>
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+              
+              <button 
+                class="carousel-btn next" 
+                (click)="nextSlide('categoria-' + categoria.idCategoria)"
+                [disabled]="isNextDisabled('categoria-' + categoria.idCategoria)">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+              </button>
+            </div>
+ 
+            <div class="carousel-indicators">
+              @for (indicator of getIndicators('categoria-' + categoria.idCategoria); track indicator) {
+                <button 
+                  class="indicator"
+                  [class.active]="getCurrentSlide('categoria-' + categoria.idCategoria) === indicator"
+                  (click)="goToSlide('categoria-' + categoria.idCategoria, indicator)">
+                </button>
+              }
+            </div>
+          </div>
+        }
+      }
+    }
+  </div>
+
+  <div class="notification-container" 
+       [class.show]="mostrarNotificacion" 
+       [class.success]="tipoNotificacion === 'success'" 
+       [class.error]="tipoNotificacion === 'error'" 
+       [class.warning]="tipoNotificacion === 'warning'">
+    <div class="notification-content">
+      <div class="notification-icon">
+        @if (tipoNotificacion === 'success') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'error') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'warning') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+          </svg>
+        }
+      </div>
+      <p>{{ mensajeNotificacion }}</p>
+      <button class="close-btn" (click)="cerrarNotificacion()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
