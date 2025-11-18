@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../services/usuario/usuario';
 import { ProductoService, Producto } from '../services/producto/producto';
 import { CategoriaService, Categoria } from '../services/categoria/categoria';
+import { FormatoPrecioPipe } from '../pipes/formato-precio-pipe';
 
 interface ProductoTienda extends Producto {
   cantidad?: number;
@@ -13,7 +14,7 @@ interface ProductoTienda extends Producto {
 @Component({
   selector: 'app-tienda',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FormatoPrecioPipe],
   templateUrl: './tienda.html',
   styleUrl: './tienda.css'
 })
@@ -31,7 +32,6 @@ export class TiendaComponent implements OnInit {
   totalCarrito: number = 0;
   currentSlides: { [key: string]: number } = {};
   cardsPerView: number = 3;
-
   dropdownCategorias: boolean = false;
 
   constructor(
@@ -66,7 +66,6 @@ export class TiendaComponent implements OnInit {
             this.currentSlides[`categoria-${cat.idCategoria}`] = 0;
           }
         });
-        console.log('✅ Categorías cargadas:', categorias);
       },
       error: (error) => {
         this.mostrarNotif('error', 'Error al cargar categorías');
@@ -79,12 +78,10 @@ export class TiendaComponent implements OnInit {
     this.productoService.obtenerProductosActivos().subscribe({
       next: (productos) => {
         this.productos = productos.map(p => ({
-          ...p,
-          cantidad: 1
+          ...p,cantidad: 1
         }));
-        
         this.productosFiltrados = [...this.productos];
-        this.currentSlides['descuentos'] = 0;
+        this.currentSlides['descuentos'] = 0;  
         this.cargando = false;
       },
       error: (error) => {
@@ -127,7 +124,7 @@ export class TiendaComponent implements OnInit {
       this.currentSlides[key] = 0;
     });
     
-    this.productosFiltrados = this.aplicarFiltroBusqueda(this.productos); 
+    this.productosFiltrados = this.aplicarFiltroBusqueda(this.productos);
     this.cdr.markForCheck();
     this.cdr.detectChanges();
   }
@@ -140,7 +137,6 @@ export class TiendaComponent implements OnInit {
     const productosConDescuento = productosFiltrados.filter(p => 
       p.valorDescuento && p.valorDescuento > 0
     );
-
     return productosConDescuento.sort((a, b) => 
       (b.valorDescuento || 0) - (a.valorDescuento || 0)
     );
@@ -260,20 +256,16 @@ export class TiendaComponent implements OnInit {
     if (!producto.valorDescuento || producto.valorDescuento <= 0) {
       return producto.precioUnitario;
     }
-
     const porcentajeDescuento = Math.min(producto.valorDescuento, 100);
     const factorDescuento = porcentajeDescuento / 100;
     const montoDescuento = producto.precioUnitario * factorDescuento;
     const precioFinal = Math.max(0, producto.precioUnitario - montoDescuento);
-    
     return Math.round(precioFinal);
   }
-  
   obtenerPorcentajeDescuento(producto: ProductoTienda): number {
     if (!producto.valorDescuento || producto.valorDescuento <= 0) {
       return 0;
     }
-  
     return Math.round(producto.valorDescuento);
   }
 
@@ -312,8 +304,19 @@ export class TiendaComponent implements OnInit {
 
     this.guardarCarrito();
     this.actualizarTotalCarrito();
+    this.animarBotonCarrito();
     this.mostrarNotif('success', `${producto.nombre} agregado al carrito`);
     producto.cantidad = 1;
+  }
+
+  animarBotonCarrito(): void {
+    const botonCarrito = document.querySelector('.cart-button');
+    if (botonCarrito) {
+      botonCarrito.classList.add('pulse');
+      setTimeout(() => {
+        botonCarrito.classList.remove('pulse');
+      }, 500);
+    }
   }
 
   guardarCarrito(): void {
@@ -349,5 +352,9 @@ export class TiendaComponent implements OnInit {
   cerrarSesion(): void {
     this.usuarioService.cerrarSesion();
     this.router.navigate(['/autorizacion']);
+  }
+
+  irAlCarrito(): void {
+    this.router.navigate(['/carrito']);
   }
 }

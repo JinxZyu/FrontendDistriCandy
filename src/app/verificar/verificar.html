@@ -1,0 +1,372 @@
+<div class="verificar-container">
+  <div class="verificar-card">
+    
+    <!-- Botón de volver -->
+    <button class="btn-volver" (click)="volverAtras()" title="Volver al carrito">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/>
+      </svg>
+    </button>
+
+    <!-- Mensaje de error -->
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <!-- Pantalla principal de checkout -->
+    @if (pantallaActual === 'checkout') {
+      <h1 class="verificar-title">Verificar Compra</h1>
+      
+      <div class="verificar-content">
+        
+        <!-- Sección de métodos de pago -->
+        <div class="payment-section">
+          
+          <!-- Selector de Tipo de Cliente -->
+          <div class="tipo-cliente-section">
+            <h2 class="section-title">Tipo de Cliente</h2>
+            <div class="tipo-cliente-options">
+              @for (tipo of tiposCliente; track tipo.id) {
+                <div class="tipo-cliente-card" 
+                     [class.active]="idTipoCliente === tipo.id"
+                     (click)="idTipoCliente = tipo.id">
+                  <div class="tipo-icon">
+                    @if (tipo.id === 1) {
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="white"/>
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" fill="white"/>
+                      </svg>
+                    }
+                  </div>
+                  <div class="tipo-info">
+                    <span class="tipo-nombre">{{ tipo.nombre }}</span>
+                    <span class="tipo-descripcion">{{ tipo.descripcion }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+          
+          <h2 class="section-title">Método de Pago</h2>
+          
+          <!-- Tarjeta de Crédito -->
+          <div class="payment-method" 
+               [class.active]="metodoPagoSeleccionado === 'credito'"
+               (click)="seleccionarMetodoPago('credito')">
+            <div class="payment-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" fill="white"/>
+              </svg>
+            </div>
+            <span class="payment-text">Tarjeta de Crédito</span>
+          </div>
+          
+          <!-- Detalles de Tarjeta de Crédito -->
+          @if (metodoPagoSeleccionado === 'credito') {
+            <div class="payment-details active">
+              <h3 class="details-title">Datos de la Tarjeta</h3>
+              
+              <form [formGroup]="tarjetaCreditoForm">
+                
+                <!-- Nombre del titular -->
+                <div class="form-group">
+                  <label class="form-label">Nombre del Titular</label>
+                  <input 
+                    type="text" 
+                    class="form-input"
+                    [class.error]="tarjetaCreditoForm.get('nombreTitular')?.invalid && tarjetaCreditoForm.get('nombreTitular')?.touched"
+                    placeholder="Nombre completo como aparece en la tarjeta"
+                    formControlName="nombreTitular">
+                  @if (tarjetaCreditoForm.get('nombreTitular')?.invalid && tarjetaCreditoForm.get('nombreTitular')?.touched) {
+                    <div class="validation-error">
+                      Nombre completo requerido (solo letras)
+                    </div>
+                  }
+                </div>
+                
+                <!-- Número de tarjeta y CVV -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Número de Tarjeta</label>
+                    <input 
+                      type="text" 
+                      class="form-input"
+                      [class.error]="tarjetaCreditoForm.get('numeroTarjeta')?.invalid && tarjetaCreditoForm.get('numeroTarjeta')?.touched"
+                      placeholder="1234 5678 9012 3456"
+                      formControlName="numeroTarjeta"
+                      (input)="alCambiarNumeroTarjeta()"
+                      maxlength="19">
+                    @if (tarjetaCreditoForm.get('numeroTarjeta')?.invalid && tarjetaCreditoForm.get('numeroTarjeta')?.touched) {
+                      <div class="validation-error">
+                        Número de tarjeta inválido
+                      </div>
+                    }
+                    <div class="card-brands">
+                      <span class="card-brand visa" [class.active]="esMarcaActiva('visa')">VISA</span>
+                      <span class="card-brand mastercard" [class.active]="esMarcaActiva('mastercard')">MASTERCARD</span>
+                      <span class="card-brand amex" [class.active]="esMarcaActiva('amex')">AMEX</span>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="form-label">CVV</label>
+                    <input 
+                      type="text" 
+                      class="form-input"
+                      [class.error]="tarjetaCreditoForm.get('cvv')?.invalid && tarjetaCreditoForm.get('cvv')?.touched"
+                      [placeholder]="placeholderCvv"
+                      formControlName="cvv"
+                      (input)="alCambiarCvv()"
+                      [maxlength]="longitudMaxCvv">
+                    @if (tarjetaCreditoForm.get('cvv')?.invalid && tarjetaCreditoForm.get('cvv')?.touched) {
+                      <div class="validation-error">
+                        CVV inválido ({{ longitudMaxCvv }} dígitos)
+                      </div>
+                    }
+                  </div>
+                </div>
+                
+                <!-- Documento de identificación -->
+                <div class="form-group">
+                  <label class="form-label">Documento de Identificación</label>
+                  <input 
+                    type="text" 
+                    class="form-input"
+                    [class.error]="tarjetaCreditoForm.get('documento')?.invalid && tarjetaCreditoForm.get('documento')?.touched"
+                    placeholder="Número de documento"
+                    formControlName="documento">
+                  @if (tarjetaCreditoForm.get('documento')?.invalid && tarjetaCreditoForm.get('documento')?.touched) {
+                    <div class="validation-error">
+                      Documento requerido (solo números)
+                    </div>
+                  }
+                </div>
+                
+                <!-- Fecha de vencimiento -->
+                <div class="form-group">
+                  <label class="form-label">Fecha de Vencimiento</label>
+                  <div class="expiry-row">
+                    <select 
+                      class="expiry-select"
+                      [class.error]="tarjetaCreditoForm.get('mesVencimiento')?.invalid && tarjetaCreditoForm.get('mesVencimiento')?.touched"
+                      formControlName="mesVencimiento">
+                      <option value="">Mes</option>
+                      @for (mes of meses; track mes.valor) {
+                        <option [value]="mes.valor">{{ mes.nombre }}</option>
+                      }
+                    </select>
+                    
+                    <select 
+                      class="expiry-select"
+                      [class.error]="tarjetaCreditoForm.get('anioVencimiento')?.invalid && tarjetaCreditoForm.get('anioVencimiento')?.touched"
+                      formControlName="anioVencimiento">
+                      <option value="">Año</option>
+                      @for (anio of anios; track anio) {
+                        <option [value]="anio">{{ anio }}</option>
+                      }
+                    </select>
+                  </div>
+                  @if ((tarjetaCreditoForm.get('mesVencimiento')?.invalid || tarjetaCreditoForm.get('anioVencimiento')?.invalid) && 
+                       (tarjetaCreditoForm.get('mesVencimiento')?.touched || tarjetaCreditoForm.get('anioVencimiento')?.touched)) {
+                    <div class="validation-error">
+                      Fecha de vencimiento requerida
+                    </div>
+                  }
+                </div>
+                
+              </form>
+            </div>
+          }
+          
+          <!-- PSE -->
+          <div class="payment-method" 
+               [class.active]="metodoPagoSeleccionado === 'pse'"
+               (click)="seleccionarMetodoPago('pse')">
+            <div class="payment-icon" style="background: #2b6cb0;">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+              </svg>
+            </div>
+            <span class="payment-text">PSE - Pago Seguro en Línea</span>
+          </div>
+          
+          <!-- Detalles de PSE -->
+          @if (metodoPagoSeleccionado === 'pse') {
+            <div class="payment-details active">
+              <h3 class="details-title">Datos para PSE</h3>
+              
+              <form [formGroup]="pseForm">
+                
+                <!-- Nombres -->
+                <div class="form-group">
+                  <label class="form-label">Nombres</label>
+                  <input 
+                    type="text" 
+                    class="form-input"
+                    [class.error]="pseForm.get('nombres')?.invalid && pseForm.get('nombres')?.touched"
+                    placeholder="Tus nombres"
+                    formControlName="nombres">
+                  @if (pseForm.get('nombres')?.invalid && pseForm.get('nombres')?.touched) {
+                    <div class="validation-error">
+                      Nombres requeridos (solo letras)
+                    </div>
+                  }
+                </div>
+                
+                <!-- Apellidos -->
+                <div class="form-group">
+                  <label class="form-label">Apellidos</label>
+                  <input 
+                    type="text" 
+                    class="form-input"
+                    [class.error]="pseForm.get('apellidos')?.invalid && pseForm.get('apellidos')?.touched"
+                    placeholder="Tus apellidos"
+                    formControlName="apellidos">
+                  @if (pseForm.get('apellidos')?.invalid && pseForm.get('apellidos')?.touched) {
+                    <div class="validation-error">
+                      Apellidos requeridos (solo letras)
+                    </div>
+                  }
+                </div>
+                
+                <!-- Documento -->
+                <div class="form-group">
+                  <label class="form-label">Documento de Identificación</label>
+                  <input 
+                    type="text" 
+                    class="form-input"
+                    [class.error]="pseForm.get('documento')?.invalid && pseForm.get('documento')?.touched"
+                    placeholder="Número de documento"
+                    formControlName="documento">
+                  @if (pseForm.get('documento')?.invalid && pseForm.get('documento')?.touched) {
+                    <div class="validation-error">
+                      Documento requerido (solo números)
+                    </div>
+                  }
+                </div>
+                
+                <!-- Banco -->
+                <div class="form-group">
+                  <label class="form-label">Selecciona tu Banco</label>
+                  <select 
+                    class="form-select"
+                    [class.error]="pseForm.get('banco')?.invalid && pseForm.get('banco')?.touched"
+                    formControlName="banco">
+                    <option value="">Selecciona tu banco</option>
+                    @for (banco of bancos; track banco) {
+                      <option [value]="banco">{{ banco }}</option>
+                    }
+                  </select>
+                  @if (pseForm.get('banco')?.invalid && pseForm.get('banco')?.touched) {
+                    <div class="validation-error">
+                      Banco requerido
+                    </div>
+                  }
+                </div>
+                
+              </form>
+            </div>
+          }
+          
+        </div>
+        
+        <!-- Sección de resumen -->
+        <div class="summary-section">
+          <h2 class="summary-title">Resumen de Compra</h2>
+          
+          <div class="products-list">
+            @for (producto of resumen.productos; track producto.idProducto) {
+              <div class="product-item">
+                <div class="product-name">
+                  {{ producto.nombre }}
+                  <span class="product-quantity">x{{ producto.cantidad }}</span>
+                </div>
+                <div class="product-price">
+                  ${{ calcularPrecioConDescuento(producto) * producto.cantidad | formatoPrecio }}
+                </div>
+              </div>
+            }
+          </div>
+          
+          <div class="summary-calculations">
+            <div class="summary-row">
+              <span class="label">Subtotal</span>
+              <span class="value">${{ resumen.subtotal | formatoPrecio }}</span>
+            </div>
+            
+            @if (resumen.descuentoTotal > 0) {
+              <div class="summary-row discount">
+                <span class="label">Descuentos</span>
+                <span class="value">-${{ resumen.descuentoTotal | formatoPrecio }}</span>
+              </div>
+            }
+            
+            <div class="summary-row total">
+              <span class="label">Total a Pagar</span>
+              <span class="value">${{ resumen.total | formatoPrecio }}</span>
+            </div>
+          </div>
+          
+          <button 
+            class="btn-finalizar"
+            [class.loading]="isLoading"
+            [disabled]="isLoading || !metodoPagoSeleccionado || resumen.productos.length === 0"
+            (click)="finalizarCompra()">
+            @if (isLoading) {
+              Procesando...
+            } @else {
+              Finalizar Compra
+            }
+          </button>
+        </div>
+        
+      </div>
+    }
+    
+    <!-- Pantalla de simulación PSE -->
+    @if (pantallaActual === 'pse') {
+      <div class="pse-screen">
+        <div class="pse-icon-large">🏦</div>
+        <h2 class="pse-title">Procesando con PSE</h2>
+        <p class="pse-message">Redirigiendo a tu banco para completar el pago...</p>
+        
+        <div class="pse-simulation">
+          <div class="bank-logo">{{ pseForm.get('banco')?.value }}</div>
+          <h3 class="simulation-title">Simulación de Pago</h3>
+          <p class="simulation-text">
+            <span class="loading-spinner"></span>
+            Procesando transacción...
+          </p>
+          <p class="simulation-note">
+            Verificando datos con el banco. Por favor espera...
+          </p>
+        </div>
+      </div>
+    }
+    
+    <!-- Pantalla de éxito -->
+    @if (pantallaActual === 'exito') {
+      <div class="success-screen">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        </div>
+        <h2 class="success-title">¡Compra Realizada!</h2>
+        <p class="success-message">
+          Tu compra se ha procesado correctamente.<br>
+          Recibirás un correo de confirmación con los detalles.
+        </p>
+        <button class="btn-volver-tienda" (click)="irATienda()">
+          Volver a la Tienda
+        </button>
+      </div>
+    }
+    
+  </div>
+</div>

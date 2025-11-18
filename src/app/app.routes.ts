@@ -15,11 +15,17 @@ export const routes: Routes = [
 },
 
 
-//   {
-//     path: 'login',
-//     canActivate: [autorizacionRedirectGuard],
-//     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
-//   },
+  {
+    path: 'carrito',
+    canActivate: [guardRol],
+    loadComponent: () => import('./carrito/carrito').then(m => m.CarritoComponent)
+  },
+
+    {
+    path: 'verificar',
+    canActivate: [guardRol],
+    loadComponent: () => import('./verificar/verificar').then(m => m.VerificarComponent)
+  },
 //   {
 //     path: 'registro',
 //     canActivate: [autorizacionRedirectGuard],
