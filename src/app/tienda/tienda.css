@@ -143,6 +143,21 @@ nav a.active::after {
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+  overflow: visible;
+}
+
+.cart-button.pulse {
+  animation: cartPulse 0.5s ease;
+}
+
+@keyframes cartPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 .welcome-section {
@@ -714,6 +729,7 @@ nav a.active::after {
   width: 25px;
   border-radius: 5px;
 }
+
 .notification-container {
   position: fixed;
   top: -100px;

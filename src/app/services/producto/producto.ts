@@ -76,7 +76,6 @@ export class ProductoService {
 
   constructor(private http: HttpClient) {}
 
-  // Obtener todos los productos
   obtenerTodos(): Observable<Producto[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.get<ProductoBackend[]>(`${this.urlBase}/obtenerTodoProducto`, { headers })
@@ -101,7 +100,6 @@ export class ProductoService {
       estado: productoBackend.estado,
       imagen: productoBackend.fotoProducto,
       
-      // Primera categoría como principal
       categoria: productoBackend.categorias && productoBackend.categorias.length > 0 
         ? {
             idCategoria: productoBackend.categorias[0].idCategoria,

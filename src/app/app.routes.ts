@@ -14,17 +14,34 @@ export const routes: Routes = [
   canActivate: [autorizacionRedirectGuard],
   loadComponent: () => import('./autorizacion/autorizacion').then(m => m.AutorizacionComponent)
 },
+
+
+  {
+    path: 'carrito',
+    canActivate: [guardRol],
+    loadComponent: () => import('./carrito/carrito').then(m => m.CarritoComponent)
+  },
+
+    {
+    path: 'verificar',
+    canActivate: [guardRol],
+    loadComponent: () => import('./verificar/verificar').then(m => m.VerificarComponent)
+  },
+
+  
+    {
+    path: 'perfil',
+    canActivate: [guardRol],
+    loadComponent: () => import('./perfil/perfil').then(m => m.PerfilComponent)
+  },
+
 {
 path: 'admin',  
   canActivate: [guardRol],
   loadComponent: () => import('./admin/admin').then(m => m.AdminComponent)
 },
-{
-    path: 'admin',  
-    canActivate: [guardRol],
-    loadComponent: () => import('./admin/admin').then(m => m.AdminComponent)
-    // Ya no necesitas rutas hijas porque todo se maneja internamente en AdminComponent
-  },
+
+
 //   {
 //     path: 'login',
 //     canActivate: [autorizacionRedirectGuard],

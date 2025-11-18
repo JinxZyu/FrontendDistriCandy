@@ -108,6 +108,21 @@ export class UsuarioService {
     }
   }
 
+actualizarDatosLocalStorage(usuario: any): void {
+  const usuarioActual = this.obtenerUsuario();
+  if (usuarioActual) {
+    const usuarioActualizado: Usuario = {
+      ...usuarioActual,
+      nombre: usuario.nombre || usuarioActual.nombre,
+      apellido: usuario.apellido || usuarioActual.apellido,
+      nombre_completo: usuario.nombre_completo || usuarioActual.nombre_completo,
+      username: usuario.username || usuarioActual.username,
+      celular: usuario.celular || usuarioActual.celular
+    };
+    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+  }
+}
+
   obtenerRol(): 'admin' | 'usuario' | null {
     const usuario = this.obtenerUsuario();
     

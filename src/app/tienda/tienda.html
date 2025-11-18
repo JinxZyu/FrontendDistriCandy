@@ -23,14 +23,14 @@
       </div>
     </div>
     
-    <nav>
-      <a href="#" class="active">Tienda</a>
-      <a href="#">Mis Pedidos</a>
-      <a href="#">Mi Cuenta</a>
-    </nav>
+   <nav>
+  <a href="#" class="active">Tienda</a>
+  <a href="#">Mis Pedidos</a>
+  <a (click)="irACuenta()" style="cursor: pointer;">Mi Cuenta</a>
+</nav>
     
     <div class="auth-buttons">
-      <button class="cart-button">
+      <button class="cart-button" (click)="irAlCarrito()">
         <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
         </svg>
@@ -87,7 +87,6 @@
       }
     </div>
   </div>
-
   <div class="carousels-container">
     @if (cargando) {
       <div class="loading-products">
@@ -95,7 +94,6 @@
         <p>Cargando productos deliciosos...</p>
       </div>
     } @else {
-      
       @if (getProductosConDescuento().length > 0) {
         <div class="carousel-section" id="carousel-descuentos">
           <div class="carousel-header">
@@ -133,10 +131,10 @@
                       <p class="product-description">{{ producto.descripcion }}</p>
                       <div class="product-price">
                         @if (producto.valorDescuento && producto.valorDescuento > 0) {
-                          <span class="price-original">${{ producto.precioUnitario }}</span>
-                          <span class="price-current">${{ calcularPrecioConDescuento(producto) }}</span>
+                          <span class="price-original">${{ producto.precioUnitario | formatoPrecio }}</span>
+                          <span class="price-current">${{ calcularPrecioConDescuento(producto) | formatoPrecio }}</span>
                         } @else {
-                          <span class="price-current">${{ producto.precioUnitario }}</span>
+                          <span class="price-current">${{ producto.precioUnitario | formatoPrecio }}</span>
                         }
                       </div>
                       <div class="product-stock">
@@ -199,7 +197,6 @@
               </svg>
             </button>
           </div>
-          
           <div class="carousel-indicators">
             @for (indicator of getIndicators('descuentos'); track indicator) {
               <button 
@@ -211,7 +208,6 @@
           </div>
         </div>
       }
-
       @for (categoria of categorias; track categoria.idCategoria) {
         @if (categoriaHasProductos(categoria.idCategoria!)) {
           <div class="carousel-section" [id]="'carousel-categoria-' + categoria.idCategoria">
@@ -247,10 +243,10 @@
                         <p class="product-description">{{ producto.descripcion }}</p>
                         <div class="product-price">
                           @if (producto.valorDescuento && producto.valorDescuento > 0) {
-                            <span class="price-original">${{ producto.precioUnitario }}</span>
-                            <span class="price-current">${{ calcularPrecioConDescuento(producto) }}</span>
+                            <span class="price-original">${{ producto.precioUnitario | formatoPrecio }}</span>
+                            <span class="price-current">${{ calcularPrecioConDescuento(producto) | formatoPrecio }}</span>
                           } @else {
-                            <span class="price-current">${{ producto.precioUnitario }}</span>
+                            <span class="price-current">${{ producto.precioUnitario | formatoPrecio }}</span>
                           }
                         </div>
                         <div class="product-stock">
@@ -313,7 +309,6 @@
                 </svg>
               </button>
             </div>
- 
             <div class="carousel-indicators">
               @for (indicator of getIndicators('categoria-' + categoria.idCategoria); track indicator) {
                 <button 
@@ -328,7 +323,6 @@
       }
     }
   </div>
-
   <div class="notification-container" 
        [class.show]="mostrarNotificacion" 
        [class.success]="tipoNotificacion === 'success'" 

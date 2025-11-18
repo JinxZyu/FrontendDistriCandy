@@ -1,0 +1,305 @@
+<div class="container">
+  <div class="background"></div>
+  
+  <header>
+    <div class="logo" (click)="irATienda()">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" fill="#9b7eb5" opacity="0.15"/>
+          <circle cx="14" cy="12" r="3.5" fill="#9b7eb5"/>
+          <circle cx="26" cy="12" r="3.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="16" rx="7" ry="6.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="25" rx="6" ry="7" fill="#9b7eb5"/>
+          <ellipse cx="14" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="26" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="17" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <ellipse cx="23" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <circle cx="18" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <circle cx="22" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <ellipse cx="17" cy="14" rx="3" ry="4" fill="white" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="distri">Distri</span><span class="candy">Candy</span>
+      </div>
+    </div>
+    
+    <nav>
+      <a (click)="irATienda()">Tienda</a>
+      <a href="#">Mis Pedidos</a>
+      <a href="#">Mi Cuenta</a>
+    </nav>
+    
+    <div class="auth-buttons">
+      <button (click)="cerrarSesion()">Salir</button>
+    </div>
+  </header>
+  <div class="cart-header">
+    <h1>
+      <svg class="cart-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+      </svg>
+      Mi Carrito de Compras
+    </h1>
+    <p class="cart-subtitle">Revisa tus productos antes de continuar</p>
+  </div>
+  <div class="cart-content">
+    @if (carritoVacio) {
+      <div class="empty-cart">
+        <svg class="empty-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" opacity="0.3"/>
+        </svg>
+        <h2>Tu carrito está vacío</h2>
+        <p>Agrega productos desde nuestra tienda para comenzar</p>
+        <button class="btn-primary" (click)="continuarComprando()">
+          <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z"/>
+          </svg>
+          Ir a la Tienda
+        </button>
+      </div>
+    }
+    @if (!carritoVacio) {
+      <div class="cart-layout">
+        <div class="products-section">
+          <div class="section-header">
+            <h2>Productos ({{ carrito.length }})</h2>
+            <button class="btn-clear" (click)="vaciarCarrito()">
+              <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+              </svg>
+              Vaciar Carrito
+            </button>
+          </div>
+
+          <div class="products-list">
+            @for (producto of carrito; track producto.idProducto) {
+              <div class="cart-item">
+                <div class="item-image">
+                  <img [src]="producto.imagen" [alt]="producto.nombre">
+                  @if (producto.valorDescuento && producto.valorDescuento > 0) {
+                    <span class="discount-badge">-{{ obtenerPorcentajeDescuento(producto) }}%</span>
+                  }
+                </div>
+
+                <div class="item-details">
+                  <h3>{{ producto.nombre }}</h3>
+                  <p class="item-description">{{ producto.descripcion }}</p>
+                  
+                  <div class="item-price">
+                    @if (producto.valorDescuento && producto.valorDescuento > 0) {
+                      <span class="price-original">${{ producto.precioUnitario | formatoPrecio }}</span>
+                      <span class="price-current">${{ calcularPrecioConDescuento(producto) | formatoPrecio }}</span>
+                    } @else {
+                      <span class="price-current">${{ producto.precioUnitario | formatoPrecio }}</span>
+                    }
+                    <span class="price-unit">c/u</span>
+                  </div>
+
+                  <div class="item-stock">
+                    @if ((producto.existencia || 0) > 10) {
+                      <span class="stock-disponible">
+                        <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                        En stock
+                      </span>
+                    } @else if ((producto.existencia || 0) > 0) {
+                      <span class="stock-pocos">
+                        <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                        </svg>
+                        Solo {{ producto.existencia }} disponibles
+                      </span>
+                    } @else {
+                      <span class="stock-agotado">
+                        <svg class="stock-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                        Agotado
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <div class="item-actions">
+                  <div class="quantity-control">
+                    <label>Cantidad</label>
+                    <div class="quantity-selector">
+                      <button (click)="disminuirCantidad(producto)" [disabled]="producto.cantidad <= 1">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M19 13H5v-2h14v2z"/>
+                        </svg>
+                      </button>
+                      <input 
+                        type="number" 
+                        [value]="producto.cantidad"
+                        (change)="actualizarCantidad(producto, $event)"
+                        min="1"
+                        [max]="producto.existencia">
+                      <button (click)="aumentarCantidad(producto)" [disabled]="producto.cantidad >= (producto.existencia || 0)">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="item-subtotal">
+                    <label>Subtotal</label>
+                    <span class="subtotal-price">${{ producto.subtotal | formatoPrecio }}</span>
+                  </div>
+
+                  <button class="btn-remove" (click)="confirmarEliminar(producto)">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="summary-section">
+          <div class="summary-card">
+            <h2>Resumen del Pedido</h2>
+            
+            <div class="summary-line">
+              <span>Subtotal</span>
+              <span>${{ subtotal | formatoPrecio }}</span>
+            </div>
+
+            @if (descuentoTotal > 0) {
+              <div class="summary-line discount">
+                <span>
+                  <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+                  </svg>
+                  Descuentos
+                </span>
+                <span>-${{ descuentoTotal | formatoPrecio }}</span>
+              </div>
+            }
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-total">
+              <span>Total a Pagar</span>
+              <span>${{ total | formatoPrecio }}</span>
+            </div>
+
+            <button class="btn-checkout" (click)="procederPago()">
+              <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+              </svg>
+              Proceder al Pago
+            </button>
+
+            <button class="btn-continue" (click)="continuarComprando()">
+              <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z"/>
+              </svg>
+              Continuar Comprando
+            </button>
+          </div>
+          <div class="info-card">
+            <h3>
+              <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>
+              </svg>
+              Información de Envío
+            </h3>
+            <p>Los envíos se realizan de lunes a viernes. Recibirás tu pedido en 2-3 días hábiles.</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  @if (mostrarModalEliminar) {
+    <div class="modal-overlay" (click)="cancelarEliminar()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Confirmar Eliminación</h3>
+          <button class="modal-close" (click)="cancelarEliminar()">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar <strong>{{ productoAEliminar?.nombre }}</strong> del carrito?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="cancelarEliminar()">Cancelar</button>
+          <button class="btn-confirm" (click)="eliminarProducto()">
+            <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+  @if (mostrarModalVaciar) {
+    <div class="modal-overlay" (click)="cancelarVaciarCarrito()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Vaciar Carrito</h3>
+          <button class="modal-close" (click)="cancelarVaciarCarrito()">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <svg class="warning-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="#f39c12"/>
+          </svg>
+          <p>¿Estás seguro de que deseas <strong>vaciar completamente el carrito</strong>?</p>
+          <p class="modal-warning">Esta acción eliminará todos los productos y no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="cancelarVaciarCarrito()">Cancelar</button>
+          <button class="btn-confirm btn-danger" (click)="confirmarVaciarCarrito()">
+            <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+            Sí, Vaciar Carrito
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+  <div class="notification-container" 
+       [class.show]="mostrarNotificacion" 
+       [class.success]="tipoNotificacion === 'success'" 
+       [class.error]="tipoNotificacion === 'error'" 
+       [class.warning]="tipoNotificacion === 'warning'">
+    <div class="notification-content">
+      <div class="notification-icon">
+        @if (tipoNotificacion === 'success') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'error') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        }
+        @if (tipoNotificacion === 'warning') {
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+          </svg>
+        }
+      </div>
+      <p>{{ mensajeNotificacion }}</p>
+      <button class="close-btn" (click)="cerrarNotificacion()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

@@ -35,7 +35,7 @@ export const guardRol: CanActivateFn = (
     urlActual.startsWith('/dulces') || 
     urlActual.startsWith('/tienda') || 
     urlActual.startsWith('/transaccion') || 
-    urlActual.startsWith('/mi-cuenta') || 
+    urlActual.startsWith('/perfil') || 
     urlActual.startsWith('/mis-transacciones')
   ) {
     if (rol === 'admin') {
