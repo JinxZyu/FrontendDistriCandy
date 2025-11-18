@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdminComponent } from './admin/admin';
 import { guardRol } from './role-guard';
 import { autorizacionRedirectGuard } from './autorizacion-redirect-guard';
 
@@ -33,6 +34,19 @@ export const routes: Routes = [
     canActivate: [guardRol],
     loadComponent: () => import('./perfil/perfil').then(m => m.PerfilComponent)
   },
+
+{
+path: 'admin',  
+  canActivate: [guardRol],
+  loadComponent: () => import('./admin/admin').then(m => m.AdminComponent)
+},
+
+
+//   {
+//     path: 'login',
+//     canActivate: [autorizacionRedirectGuard],
+//     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
+//   },
 //   {
 //     path: 'registro',
 //     canActivate: [autorizacionRedirectGuard],
@@ -60,3 +74,4 @@ export const routes: Routes = [
     redirectTo: '/autorizacion'
   }
 ]
+

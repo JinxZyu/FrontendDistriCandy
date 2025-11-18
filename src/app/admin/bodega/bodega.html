@@ -1,0 +1,249 @@
+<div class="bodega-container">
+  <!-- Header -->
+  <div class="bodega-header">
+    <h1>Gestión de Bodegas</h1>
+    <button class="btn btn-primary" (click)="abrirFormularioCrear()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
+      </svg>
+      <span>Nueva Bodega</span>
+    </button>
+  </div>
+
+  <div *ngIf="mensaje" [class]="'mensaje ' + tipoMensaje">
+    <div class="mensaje-icon">
+      <svg *ngIf="tipoMensaje === 'success'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+      <svg *ngIf="tipoMensaje === 'error'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+      </svg>
+    </div>
+    <span>{{ mensaje }}</span>
+  </div>
+
+  <div *ngIf="cargando" class="cargando">
+    <div class="spinner"></div>
+    <span>Cargando bodegas...</span>
+  </div>
+
+  <div *ngIf="!cargando" class="table-container">
+    <table class="bodega-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Dirección</th>
+          <th>País</th>
+          <th>Ciudad</th>
+          <th>Barrio</th>
+          <th>Capacidad Máx.</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bodega of bodegas">
+          <td>{{ bodega.nombre }}</td>
+          <td>{{ bodega.direccion }}</td>
+          <td>{{ bodega.pais }}</td>
+          <td>{{ bodega.ciudad }}</td>
+          <td>{{ bodega.barrio }}</td>
+          <td>{{ bodega.capacidadMax }}</td>
+          <td>
+            <span [class]="getEstadoClase(bodega.estado)">
+              {{ getEstadoTexto(bodega.estado) }}
+            </span>
+          </td>
+          <td class="acciones">
+            <button class="btn btn-editar" (click)="abrirFormularioEditar(bodega)">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white"/>
+              </svg>
+              <span>Editar</span>
+            </button>
+            <button class="btn btn-estado" (click)="cambiarEstadoBodega(bodega.idBodega!)">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+              </svg>
+              <span>{{ bodega.estado === 1 ? 'Desactivar' : 'Activar' }}</span>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="bodegas.length === 0">
+          <td colspan="8" class="no-data">
+            <div class="no-data-content">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z" fill="#8B7355"/>
+              </svg>
+              <p>No hay bodegas registradas</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="mostrarFormulario" class="modal-overlay" (click)="cerrarFormulario()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ esEdicion ? 'Editar Bodega' : 'Crear Bodega' }}</h2>
+        <button class="btn-cerrar" (click)="cerrarFormulario()">×</button>
+      </div>
+      
+      <form (ngSubmit)="esEdicion ? actualizarBodega() : crearBodega()" #form="ngForm">
+        <div class="form-group">
+          <label for="nombre">Nombre *</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            [(ngModel)]="bodegaActual.nombre"
+            required
+            #nombre="ngModel"
+            (input)="validarCampo('nombre', bodegaActual.nombre)"
+            [class.invalid]="(nombre.invalid && nombre.touched) || erroresValidacion.nombre"
+            placeholder="">
+          <div *ngIf="nombre.invalid && nombre.touched" class="error">
+            El nombre es requerido
+          </div>
+          <div *ngIf="erroresValidacion.nombre" class="error">
+            {{ erroresValidacion.nombre }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="direccion">Dirección *</label>
+          <input
+            type="text"
+            id="direccion"
+            name="direccion"
+            [(ngModel)]="bodegaActual.direccion"
+            required
+            #direccion="ngModel"
+            (input)="validarCampo('direccion', bodegaActual.direccion)"
+            [class.invalid]="(direccion.invalid && direccion.touched) || erroresValidacion.direccion"
+            placeholder="">
+          <div *ngIf="direccion.invalid && direccion.touched" class="error">
+            La dirección es requerida
+          </div>
+          <div *ngIf="erroresValidacion.direccion" class="error">
+            {{ erroresValidacion.direccion }}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pais">País *</label>
+            <input
+              type="text"
+              id="pais"
+              name="pais"
+              [(ngModel)]="bodegaActual.pais"
+              required
+              #pais="ngModel"
+              (input)="validarCampo('pais', bodegaActual.pais)"
+              [class.invalid]="(pais.invalid && pais.touched) || erroresValidacion.pais"
+              placeholder="">
+            <div *ngIf="pais.invalid && pais.touched" class="error">
+              El país es requerido
+            </div>
+            <div *ngIf="erroresValidacion.pais" class="error">
+              {{ erroresValidacion.pais }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ciudad">Ciudad *</label>
+            <input
+              type="text"
+              id="ciudad"
+              name="ciudad"
+              [(ngModel)]="bodegaActual.ciudad"
+              required
+              #ciudad="ngModel"
+              (input)="validarCampo('ciudad', bodegaActual.ciudad)"
+              [class.invalid]="(ciudad.invalid && ciudad.touched) || erroresValidacion.ciudad"
+              placeholder="">
+            <div *ngIf="ciudad.invalid && ciudad.touched" class="error">
+              La ciudad es requerida
+            </div>
+            <div *ngIf="erroresValidacion.ciudad" class="error">
+              {{ erroresValidacion.ciudad }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="barrio">Barrio *</label>
+            <input
+              type="text"
+              id="barrio"
+              name="barrio"
+              [(ngModel)]="bodegaActual.barrio"
+              required
+              #barrio="ngModel"
+              (input)="validarCampo('barrio', bodegaActual.barrio)"
+              [class.invalid]="(barrio.invalid && barrio.touched) || erroresValidacion.barrio"
+              placeholder="">
+            <div *ngIf="barrio.invalid && barrio.touched" class="error">
+              El barrio es requerido
+            </div>
+            <div *ngIf="erroresValidacion.barrio" class="error">
+              {{ erroresValidacion.barrio }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="capacidadMax">Capacidad Máxima *</label>
+            <input
+              type="number"
+              id="capacidadMax"
+              name="capacidadMax"
+              [(ngModel)]="bodegaActual.capacidadMax"
+              required
+              min="1"
+              #capacidadMax="ngModel"
+              (input)="validarCampo('capacidadMax', bodegaActual.capacidadMax)"
+              [class.invalid]="(capacidadMax.invalid && capacidadMax.touched) || erroresValidacion.capacidadMax"
+              placeholder="Número mayor a 0">
+            <div *ngIf="capacidadMax.invalid && capacidadMax.touched" class="error">
+              La capacidad máxima es requerida
+            </div>
+            <div *ngIf="erroresValidacion.capacidadMax" class="error">
+              {{ erroresValidacion.capacidadMax }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="informacionAdicional">Información Adicional</label>
+          <textarea
+            id="informacionAdicional"
+            name="informacionAdicional"
+            [(ngModel)]="bodegaActual.informacionAdicional"
+            (input)="validarCampo('informacionAdicional', bodegaActual.informacionAdicional)"
+            rows="4"
+            [class.invalid]="erroresValidacion.informacionAdicional"
+            placeholder="Cualquier información adicional "></textarea>
+          <div *ngIf="erroresValidacion.informacionAdicional" class="error">
+            {{ erroresValidacion.informacionAdicional }}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cerrarFormulario()">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [class.btn-disabled]="!formularioCompleto() || tieneErrores()"
+            [disabled]="!formularioCompleto() || tieneErrores()">
+            {{ esEdicion ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

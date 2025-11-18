@@ -74,6 +74,10 @@ export class ProductoService {
       );
   }
 
+  private getHeaders(): HttpHeaders {
+    return new HttpHeaders({ 'Content-Type': 'application/json' });
+  }
+
   private mapearProducto(productoBackend: ProductoBackend): Producto {
     return {
       idProducto: productoBackend.idProducto,
@@ -105,6 +109,14 @@ export class ProductoService {
     return this.http.get<ProductoBackend>(`${this.urlBase}/nombre`, { 
       params: { nombre },
       headers 
+    }).pipe(
+      map(p => this.mapearProducto(p))
+    );
+  }
+
+   actualizarProducto(id: number, producto: ProductoRequest): Observable<Producto> {
+    return this.http.put<ProductoBackend>(`${this.urlBase}/actualizarProducto/${id}`, producto, {
+      headers: this.getHeaders()
     }).pipe(
       map(p => this.mapearProducto(p))
     );
@@ -146,4 +158,5 @@ export class ProductoService {
       }))
     );
   }
+
 }

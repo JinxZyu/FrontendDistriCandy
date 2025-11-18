@@ -1,0 +1,290 @@
+<div class="producto-container">
+  <!-- Header -->
+  <div class="producto-header">
+    <h1>Gestión de Productos</h1>
+    <button class="btn btn-primary" (click)="abrirFormularioCrear()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
+      </svg>
+      <span>Nuevo Producto</span>
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="mensaje" [class]="'mensaje ' + tipoMensaje">
+    <div class="mensaje-icon">
+      <svg *ngIf="tipoMensaje === 'success'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+      <svg *ngIf="tipoMensaje === 'error'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+      </svg>
+    </div>
+    <span>{{ mensaje }}</span>
+  </div>
+
+  <!-- Cargando -->
+  <div *ngIf="cargando" class="cargando">
+    <div class="spinner"></div>
+    <span>Cargando productos...</span>
+  </div>
+
+  <!-- Tabla de productos -->
+  <div *ngIf="!cargando" class="table-container">
+    <table class="producto-table">
+      <thead>
+        <tr>
+          <th>Referencia</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Categorías</th>
+          <th>Precio Unitario</th>
+          <th>Valor Descuento</th>
+          <th>Existencia</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let producto of productos">
+          <td>{{ producto.referencia }}</td>
+          <td>{{ producto.nombre }}</td>
+          <td>{{ producto.descripcion }}</td>
+          <td>
+            <div class="categorias-cell">
+              <span *ngFor="let cat of producto.categorias" class="categoria-badge">
+                {{ cat.nombre }}
+              </span>
+              <span *ngIf="!producto.categorias || producto.categorias.length === 0" class="sin-categoria">
+                Sin categoría
+              </span>
+            </div>
+          </td>
+          <td>${{ producto.precioUnitario | number:'1.0-0' }}</td>
+          <td>${{ (producto.valorDescuento || 0) | number:'1.0-0' }}</td>
+          <td>{{ producto.existencia }}</td>
+          <td>
+            <span [class]="getEstadoClase(producto.estado)">
+              {{ getEstadoTexto(producto.estado) }}
+            </span>
+          </td>
+          <td class="acciones">
+            <button class="btn btn-editar" (click)="abrirFormularioEditar(producto)">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="white"/>
+              </svg>
+              <span>Editar</span>
+            </button>
+            <button class="btn btn-estado" (click)="cambiarEstadoProducto(producto.idProducto!)">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+              </svg>
+              <span>{{ producto.estado === 1 ? 'Desactivar' : 'Activar' }}</span>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="productos.length === 0">
+          <td colspan="9" class="no-data">
+            <div class="no-data-content">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z" fill="#8B7355"/>
+              </svg>
+              <p>No hay productos registrados</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Formulario -->
+  <div *ngIf="mostrarFormulario" class="modal-overlay" (click)="cerrarFormulario()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ esEdicion ? 'Editar Producto' : 'Crear Producto' }}</h2>
+        <button class="btn-cerrar" (click)="cerrarFormulario()">×</button>
+      </div>
+      
+      <form (ngSubmit)="esEdicion ? actualizarProducto() : crearProducto()" #form="ngForm">
+        <div class="form-group">
+          <label for="referencia">Referencia *</label>
+          <input
+            type="text"
+            id="referencia"
+            name="referencia"
+            [(ngModel)]="productoActual.referencia"
+            required
+            #referencia="ngModel"
+            (input)="validarCampo('referencia', productoActual.referencia)"
+            [class.invalid]="(referencia.invalid && referencia.touched) || erroresValidacion.referencia"
+            placeholder="Código único del producto">
+          <div *ngIf="referencia.invalid && referencia.touched" class="error">
+            La referencia es requerida
+          </div>
+          <div *ngIf="erroresValidacion.referencia" class="error">
+            {{ erroresValidacion.referencia }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="nombre">Nombre *</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            [(ngModel)]="productoActual.nombre"
+            required
+            #nombre="ngModel"
+            (input)="validarCampo('nombre', productoActual.nombre)"
+            [class.invalid]="(nombre.invalid && nombre.touched) || erroresValidacion.nombre"
+            placeholder="Nombre del producto">
+          <div *ngIf="nombre.invalid && nombre.touched" class="error">
+            El nombre es requerido
+          </div>
+          <div *ngIf="erroresValidacion.nombre" class="error">
+            {{ erroresValidacion.nombre }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <textarea
+            id="descripcion"
+            name="descripcion"
+            [(ngModel)]="productoActual.descripcion"
+            (input)="validarCampo('descripcion', productoActual.descripcion)"
+            rows="3"
+            [class.invalid]="erroresValidacion.descripcion"
+            placeholder="Descripción del producto"></textarea>
+          <div *ngIf="erroresValidacion.descripcion" class="error">
+            {{ erroresValidacion.descripcion }}
+          </div>
+        </div>
+
+        <!-- NUEVO: Selector de Categorías con Dropdown y Chips -->
+        <div class="form-group">
+          <label>Categorías</label>
+          
+          <!-- Selector con botón de añadir -->
+          <div class="categoria-selector-wrapper">
+            <select 
+              #categoriaSelect
+              class="categoria-dropdown"
+              [disabled]="categorias.length === 0">
+              <option value="" disabled selected>Seleccionar categoría...</option>
+              <option 
+                *ngFor="let categoria of categorias" 
+                [value]="categoria.idCategoria"
+                [disabled]="isCategoriaSeleccionada(categoria.idCategoria)">
+                {{ categoria.nombre }}
+              </option>
+            </select>
+            <button 
+              type="button" 
+              class="btn-add-categoria"
+              [disabled]="categorias.length === 0"
+              (click)="agregarCategoria(categoriaSelect.value); categoriaSelect.value = ''">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="white"/>
+              </svg>
+              Añadir
+            </button>
+          </div>
+
+          <!-- Categorías seleccionadas como chips -->
+          <div class="categorias-seleccionadas">
+            <div 
+              *ngFor="let idCategoria of productoActual.idsCategorias" 
+              class="categoria-chip">
+              <span>{{ getNombreCategoria(idCategoria) }}</span>
+              <button 
+                type="button" 
+                class="btn-remove-chip"
+                (click)="removerCategoria(idCategoria)">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <div *ngIf="productoActual.idsCategorias.length === 0" class="sin-categorias-msg">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#9CA3AF"/>
+              </svg>
+              <span>No hay categorías seleccionadas. Selecciona una del menú y haz clic en "Añadir"</span>
+            </div>
+          </div>
+
+          <div *ngIf="categorias.length === 0" class="sin-categorias-disponibles">
+            <p>⚠️ No hay categorías activas disponibles</p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="precioUnitario">Precio Unitario *</label>
+          <input
+            type="number"
+            id="precioUnitario"
+            name="precioUnitario"
+            [(ngModel)]="productoActual.precioUnitario"
+            required
+            #precioUnitario="ngModel"
+            (input)="validarCampo('precioUnitario', productoActual.precioUnitario)"
+            min="1"
+            [class.invalid]="(precioUnitario.invalid && precioUnitario.touched) || erroresValidacion.precioUnitario"
+            placeholder="0">
+          <div *ngIf="precioUnitario.invalid && precioUnitario.touched" class="error">
+            El precio unitario es requerido
+          </div>
+          <div *ngIf="erroresValidacion.precioUnitario" class="error">
+            {{ erroresValidacion.precioUnitario }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="valorDescuento">Valor Descuento</label>
+          <input
+            type="number"
+            id="valorDescuento"
+            name="valorDescuento"
+            [(ngModel)]="productoActual.valorDescuento"
+            #valorDescuento="ngModel"
+            (input)="validarCampo('valorDescuento', productoActual.valorDescuento)"
+            min="0"
+            [class.invalid]="erroresValidacion.valorDescuento"
+            placeholder="0">
+          <div *ngIf="erroresValidacion.valorDescuento" class="error">
+            {{ erroresValidacion.valorDescuento }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fotoProducto">URL de la Foto del Producto</label>
+          <input
+            type="text"
+            id="fotoProducto"
+            name="fotoProducto"
+            [(ngModel)]="productoActual.fotoProducto"
+            (input)="validarCampo('fotoProducto', productoActual.fotoProducto)"
+            [class.invalid]="erroresValidacion.fotoProducto"
+            placeholder="https://ejemplo.com/imagen.jpg">
+          <div *ngIf="erroresValidacion.fotoProducto" class="error">
+            {{ erroresValidacion.fotoProducto }}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cerrarFormulario()">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [class.btn-disabled]="!formularioCompleto() || tieneErrores()"
+            [disabled]="!formularioCompleto() || tieneErrores()">
+            {{ esEdicion ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
