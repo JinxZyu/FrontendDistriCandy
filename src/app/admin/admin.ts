@@ -2,13 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-// Importar los componentes hijos disponibles
+
 import { ProveedorComponent } from './proveedor/proveedor';
-// TODO: Descomentar cuando estén creados los siguientes componentes:
-// import { ProductoComponent } from './producto/producto';
-// import { BodegaComponent } from './bodega/bodega';
-// import { VentaComponent } from './venta/venta';
-// import { InventarioComponent } from './inventario/inventario';
+import { BodegaComponent } from './bodega/bodega';
+import { UsuarioService } from '../services/usuario/usuario';
 
 @Component({
   selector: 'app-admin',
@@ -16,10 +13,7 @@ import { ProveedorComponent } from './proveedor/proveedor';
   imports: [
     CommonModule,
     ProveedorComponent,
-    // ProductoComponent,
-    // BodegaComponent,
-    // VentaComponent,
-    // InventarioComponent,
+    BodegaComponent
   ],
   templateUrl: './admin.html',
   styleUrls: ['./admin.css']
@@ -29,35 +23,53 @@ export class AdminComponent implements OnInit {
   adminName: string = 'Administrador';
   adminRole: string = 'Administrador';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private usuarioService: UsuarioService
+  ) {}
 
   ngOnInit(): void {
-    // Cargar información del usuario desde localStorage si existe
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      this.adminName = user.nombre || 'Administrador';
-      this.adminRole = user.rol || 'Administrador';
+    if (!this.usuarioService.estaAutenticado()) {
+      this.cerrarSesion();
+      return;
+    }
+
+    if (!this.usuarioService.esAdmin()) {
+      this.mostrarNotif('error', 'No tienes permisos de administrador');
+      setTimeout(() => {
+        this.cerrarSesion();
+      }, 2000);
+      return;
+    }
+
+    const usuario = this.usuarioService.obtenerUsuario();
+    if (usuario) {
+      this.adminName = usuario.nombre_completo || 'Administrador';
+      this.adminRole = 'Administrador';
     }
   }
 
-  // Método para cambiar de vista (SOLO cambia la vista, NO navega)
+
   changeView(view: string): void {
     this.selectedView = view;
   }
 
-  // Método para cerrar sesión
-  cerrarSesion(): void {
-    // Limpiar datos de sesión
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('rol');
-    
-    // Redirigir al login/autorización
-    this.router.navigate(['/autorizacion']);
+  private mostrarNotif(tipo: 'success' | 'error' | 'warning', mensaje: string): void {
+    console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
+    alert(`[${tipo.toUpperCase()}] ${mensaje}`); 
   }
 
-  // Método auxiliar para verificar si hay una vista activa
+  cerrarSesion(): void {
+    this.usuarioService.cerrarSesion();
+    localStorage.clear();
+    sessionStorage.clear();
+
+    setTimeout(() => {
+      window.location.href = '/autorizacion';
+    }, 100);
+  }
+
+
   hasActiveView(): boolean {
     return this.selectedView !== '';
   }

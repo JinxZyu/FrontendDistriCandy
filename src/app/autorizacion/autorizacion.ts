@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { UsuarioService } from '../services/usuario/usuario'; 
+import { UsuarioService } from '../services/usuario/usuario';
 import { FormsModule, NgForm } from '@angular/forms';
 
 @Component({
@@ -28,17 +28,17 @@ export class AutorizacionComponent {
   confirmarClaveRecuperacion = '';
 
   loginData = {
-    correo: '', 
+    correo: '',
     clave: ''  
   };
 
   registroData = {
     nombre: '',        
     apellido: '',        
-    tipo_documento: '',   
-    identificacion: '',   
-    celular: '',       
-    correo: '',         
+    tipo_documento: '',  
+    identificacion: '',  
+    celular: '',      
+    correo: '',        
     clave: ''            
   };
 
@@ -59,7 +59,7 @@ export class AutorizacionComponent {
     this.tipoNotificacion = tipo;
     this.mensajeNotificacion = mensaje;
     this.mostrarNotificacion = true;
-    
+   
     setTimeout(() => {
       this.mostrarNotificacion = false;
     }, 5000);
@@ -71,25 +71,25 @@ export class AutorizacionComponent {
 
   onLogin(form: NgForm): void {
     if (this.cargando) return;
-    
+   
     Object.keys(form.controls).forEach(key => {
       form.controls[key].markAsTouched();
     });
-    
+   
     if (form.invalid || !this.loginData.correo || !this.loginData.clave) {
       this.mostrarNotif('warning', 'Por favor completa todos los campos obligatorios correctamente');
       return;
     }
 
     this.cargando = true;
-    
+   
     this.usuarioService.iniciarSesion(this.loginData).subscribe({
       next: (respuesta: any) => {
         this.cargando = false;
-        
+       
         if (respuesta.exito) {
           this.mostrarNotif('success', '¡Bienvenido!');
-          
+         
           setTimeout(() => {
             if (this.usuarioService.esAdmin()) {
               this.router.navigate(['/admin']);
@@ -114,11 +114,11 @@ export class AutorizacionComponent {
 
   onRegistro(form: NgForm): void {
     if (this.cargando) return;
-    
+   
     Object.keys(form.controls).forEach(key => {
       form.controls[key].markAsTouched();
     });
-    
+   
     if (form.invalid) {
       this.mostrarNotif('warning', 'Por favor completa todos los campos obligatorios correctamente');
       return;
@@ -129,10 +129,10 @@ export class AutorizacionComponent {
     this.usuarioService.registrarCliente(this.registroData).subscribe({
       next: (respuesta: any) => {
         this.cargando = false;
-        
+       
         if (respuesta.exito) {
           this.mostrarNotif('success', '¡Registro exitoso! Ahora puedes iniciar sesión.');
-          
+         
           form.reset();
           this.registroData = {
             nombre: '',
@@ -143,13 +143,13 @@ export class AutorizacionComponent {
             correo: '',
             clave: ''
           };
-          
+         
           setTimeout(() => {
             this.mostrarLogin();
           }, 2000);
         } else {
           const errorMsg = respuesta.error?.toLowerCase() || '';
-          
+         
           if (errorMsg.includes('correo') || errorMsg.includes('email')) {
             this.mostrarNotif('error', 'Este correo electrónico ya está registrado. Intenta iniciar sesión o usa otro correo.');
           } else if (errorMsg.includes('identificacion') || errorMsg.includes('documento')) {
@@ -165,10 +165,10 @@ export class AutorizacionComponent {
       },
       error: (error: any) => {
         this.cargando = false;
-        
+       
         if (error.status === 400) {
           const errorMsg = error.error?.error || error.error?.message || '';
-          
+         
           if (errorMsg.toLowerCase().includes('correo') || errorMsg.toLowerCase().includes('email')) {
             this.mostrarNotif('error', 'Este correo electrónico ya está registrado.');
           } else if (errorMsg.toLowerCase().includes('identificacion')) {
@@ -205,21 +205,21 @@ export class AutorizacionComponent {
 
   solicitarCodigoRecuperacion(form: NgForm): void {
     if (this.cargando) return;
-    
+   
     Object.keys(form.controls).forEach(key => {
       form.controls[key].markAsTouched();
     });
-    
+   
     if (form.invalid || !this.correoRecuperacion) {
       this.mostrarNotif('warning', 'Por favor ingresa un correo electrónico válido');
       return;
     }
     this.cargando = true;
-    
+   
     this.usuarioService.solicitarCodigoRecuperacion(this.correoRecuperacion).subscribe({
       next: (respuesta) => {
         this.cargando = false;
-        
+       
         if (respuesta.exito) {
           this.mostrarNotif('success', '¡Código enviado! Revisa tu correo');
           this.pasoRecuperacion = 2;
@@ -236,28 +236,28 @@ export class AutorizacionComponent {
 
   restablecerConCodigo(form: NgForm): void {
     if (this.cargando) return;
-    
+   
     Object.keys(form.controls).forEach(key => {
       form.controls[key].markAsTouched();
     });
-    
+   
     if (form.invalid) {
       this.mostrarNotif('warning', 'Por favor completa todos los campos');
       return;
     }
-    
+   
     if (this.nuevaClaveRecuperacion !== this.confirmarClaveRecuperacion) {
       this.mostrarNotif('error', 'Las contraseñas no coinciden');
       return;
     }
-    
+   
     if (this.nuevaClaveRecuperacion.length < 6) {
       this.mostrarNotif('error', 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     this.cargando = true;
-    
+   
     this.usuarioService.restablecerContrasena(
       this.correoRecuperacion,
       this.codigoRecuperacion,
@@ -265,7 +265,7 @@ export class AutorizacionComponent {
     ).subscribe({
       next: (respuesta) => {
         this.cargando = false;
-        
+       
         if (respuesta.exito) {
           this.mostrarNotif('success', '¡Contraseña actualizada exitosamente!');
           this.cerrarModalRecuperacion();

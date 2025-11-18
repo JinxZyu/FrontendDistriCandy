@@ -26,6 +26,9 @@ export class ProveedorComponent implements OnInit {
   tipoMensaje = '';
   cargando = true;
 
+  // Variables para manejar errores de validación
+  erroresValidacion: any = {};
+
   constructor(private proveedorService: ProveedorService) {}
 
   ngOnInit(): void {
@@ -59,12 +62,14 @@ export class ProveedorComponent implements OnInit {
     };
     this.esEdicion = false;
     this.mostrarFormulario = true;
+    this.limpiarErrores();
   }
 
   abrirFormularioEditar(proveedor: Proveedor): void {
     this.proveedorActual = { ...proveedor };
     this.esEdicion = true;
     this.mostrarFormulario = true;
+    this.limpiarErrores();
   }
 
   cerrarFormulario(): void {
@@ -77,9 +82,156 @@ export class ProveedorComponent implements OnInit {
       direccion: '',
       estado: 1
     };
+    this.limpiarErrores();
+  }
+
+  // Métodos de validación
+  validarNit(nit: string): boolean {
+    // Solo permite números y máximo 10 dígitos
+    const nitRegex = /^[0-9]{1,10}$/;
+    return nitRegex.test(nit);
+  }
+
+  validarNombre(nombre: string): boolean {
+    // Solo permite letras, espacios y algunos caracteres especiales comunes en nombres
+    const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s\-\.]+$/;
+    return nombreRegex.test(nombre);
+  }
+
+  validarCelular(celular: string): boolean {
+    // Solo permite números, máximo 10 dígitos, opcionalmente puede estar vacío
+    if (!celular) return true;
+    const celularRegex = /^[0-9]{1,10}$/;
+    return celularRegex.test(celular);
+  }
+
+  validarCorreo(correo: string): boolean {
+    // Validación básica de email que requiere @ y .
+    const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return correoRegex.test(correo);
+  }
+
+  validarDireccion(direccion: string): boolean {
+    // Permite letras, números, espacios y caracteres comunes en direcciones
+    const direccionRegex = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-\#\,\.\°]+$/;
+    return direccionRegex.test(direccion);
+  }
+
+  // Validar si el formulario está completo
+  formularioCompleto(): boolean {
+    return !!(
+      this.proveedorActual.nit &&
+      this.proveedorActual.nombre &&
+      this.proveedorActual.correo &&
+      this.proveedorActual.nit.trim() !== '' &&
+      this.proveedorActual.nombre.trim() !== '' &&
+      this.proveedorActual.correo.trim() !== ''
+    );
+  }
+
+  // Verificar si hay errores de validación
+  tieneErrores(): boolean {
+    return Object.keys(this.erroresValidacion).length > 0;
+  }
+
+  // Validar formulario completo con todas las reglas
+  validarFormulario(): boolean {
+    this.limpiarErrores();
+    let esValido = true;
+
+    // Validar NIT
+    if (!this.proveedorActual.nit) {
+      this.erroresValidacion.nit = 'El NIT es requerido';
+      esValido = false;
+    } else if (!this.validarNit(this.proveedorActual.nit)) {
+      this.erroresValidacion.nit = 'El NIT solo puede contener números (máximo 10 dígitos)';
+      esValido = false;
+    }
+
+    // Validar Nombre
+    if (!this.proveedorActual.nombre) {
+      this.erroresValidacion.nombre = 'El nombre es requerido';
+      esValido = false;
+    } else if (!this.validarNombre(this.proveedorActual.nombre)) {
+      this.erroresValidacion.nombre = 'El nombre solo puede contener letras, espacios y guiones';
+      esValido = false;
+    }
+
+    // Validar Celular
+    if (this.proveedorActual.celular && !this.validarCelular(this.proveedorActual.celular)) {
+      this.erroresValidacion.celular = 'El celular solo puede contener números (máximo 10 dígitos)';
+      esValido = false;
+    }
+
+    // Validar Correo
+    if (!this.proveedorActual.correo) {
+      this.erroresValidacion.correo = 'El correo es requerido';
+      esValido = false;
+    } else if (!this.validarCorreo(this.proveedorActual.correo)) {
+      this.erroresValidacion.correo = 'El correo debe tener un formato válido (ejemplo@dominio.com)';
+      esValido = false;
+    }
+
+    // Validar Dirección
+    if (this.proveedorActual.direccion && !this.validarDireccion(this.proveedorActual.direccion)) {
+      this.erroresValidacion.direccion = 'La dirección contiene caracteres no permitidos';
+      esValido = false;
+    }
+
+    return esValido;
+  }
+
+  limpiarErrores(): void {
+    this.erroresValidacion = {};
+  }
+
+  // Método para validar en tiempo real mientras el usuario escribe
+  validarCampo(campo: string, valor: string): void {
+    switch (campo) {
+      case 'nit':
+        if (valor && !this.validarNit(valor)) {
+          this.erroresValidacion.nit = 'El NIT solo puede contener números (máximo 10 dígitos)';
+        } else {
+          delete this.erroresValidacion.nit;
+        }
+        break;
+      case 'celular':
+        if (valor && !this.validarCelular(valor)) {
+          this.erroresValidacion.celular = 'El celular solo puede contener números (máximo 10 dígitos)';
+        } else {
+          delete this.erroresValidacion.celular;
+        }
+        break;
+      case 'nombre':
+        if (valor && !this.validarNombre(valor)) {
+          this.erroresValidacion.nombre = 'El nombre solo puede contener letras, espacios y guiones';
+        } else {
+          delete this.erroresValidacion.nombre;
+        }
+        break;
+      case 'correo':
+        if (valor && !this.validarCorreo(valor)) {
+          this.erroresValidacion.correo = 'El correo debe tener un formato válido (ejemplo@dominio.com)';
+        } else {
+          delete this.erroresValidacion.correo;
+        }
+        break;
+      case 'direccion':
+        if (valor && !this.validarDireccion(valor)) {
+          this.erroresValidacion.direccion = 'La dirección contiene caracteres no permitidos';
+        } else {
+          delete this.erroresValidacion.direccion;
+        }
+        break;
+    }
   }
 
   crearProveedor(): void {
+    if (!this.validarFormulario()) {
+      this.mostrarMensaje('Por favor corrige los errores en el formulario', 'error');
+      return;
+    }
+
     this.proveedorService.crearProveedor(this.proveedorActual).subscribe({
       next: (proveedorCreado: Proveedor) => {
         this.proveedores.push(proveedorCreado);
@@ -94,6 +246,11 @@ export class ProveedorComponent implements OnInit {
   }
 
   actualizarProveedor(): void {
+    if (!this.validarFormulario()) {
+      this.mostrarMensaje('Por favor corrige los errores en el formulario', 'error');
+      return;
+    }
+
     if (this.proveedorActual.id) {
       this.proveedorService.actualizarProveedor(this.proveedorActual.id, this.proveedorActual).subscribe({
         next: (proveedorActualizado: Proveedor) => {

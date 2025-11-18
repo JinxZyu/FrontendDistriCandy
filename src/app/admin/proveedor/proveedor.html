@@ -23,7 +23,7 @@
     <span>{{ mensaje }}</span>
   </div>
 
-  <!-- Estado de carga -->
+  <!-- Cargando -->
   <div *ngIf="cargando" class="cargando">
     <div class="spinner"></div>
     <span>Cargando proveedores...</span>
@@ -102,9 +102,15 @@
             [(ngModel)]="proveedorActual.nit"
             required
             #nit="ngModel"
-            [class.invalid]="nit.invalid && nit.touched">
+            (input)="validarCampo('nit', proveedorActual.nit)"
+            maxlength="10"
+            [class.invalid]="(nit.invalid && nit.touched) || erroresValidacion.nit"
+            placeholder="Solo números (máx. 10 dígitos)">
           <div *ngIf="nit.invalid && nit.touched" class="error">
             El NIT es requerido
+          </div>
+          <div *ngIf="erroresValidacion.nit" class="error">
+            {{ erroresValidacion.nit }}
           </div>
         </div>
 
@@ -117,9 +123,14 @@
             [(ngModel)]="proveedorActual.nombre"
             required
             #nombre="ngModel"
-            [class.invalid]="nombre.invalid && nombre.touched">
+            (input)="validarCampo('nombre', proveedorActual.nombre)"
+            [class.invalid]="(nombre.invalid && nombre.touched) || erroresValidacion.nombre"
+            placeholder="Solo letras, espacios y guiones">
           <div *ngIf="nombre.invalid && nombre.touched" class="error">
             El nombre es requerido
+          </div>
+          <div *ngIf="erroresValidacion.nombre" class="error">
+            {{ erroresValidacion.nombre }}
           </div>
         </div>
 
@@ -129,7 +140,14 @@
             type="text"
             id="celular"
             name="celular"
-            [(ngModel)]="proveedorActual.celular">
+            [(ngModel)]="proveedorActual.celular"
+            (input)="validarCampo('celular', proveedorActual.celular)"
+            maxlength="10"
+            [class.invalid]="erroresValidacion.celular"
+            placeholder="Solo números (máx. 10 dígitos)">
+          <div *ngIf="erroresValidacion.celular" class="error">
+            {{ erroresValidacion.celular }}
+          </div>
         </div>
 
         <div class="form-group">
@@ -141,9 +159,14 @@
             [(ngModel)]="proveedorActual.correo"
             required
             #correo="ngModel"
-            [class.invalid]="correo.invalid && correo.touched">
+            (input)="validarCampo('correo', proveedorActual.correo)"
+            [class.invalid]="(correo.invalid && correo.touched) || erroresValidacion.correo"
+            placeholder="ejemplo@dominio.com">
           <div *ngIf="correo.invalid && correo.touched" class="error">
             El correo es requerido
+          </div>
+          <div *ngIf="erroresValidacion.correo" class="error">
+            {{ erroresValidacion.correo }}
           </div>
         </div>
 
@@ -153,18 +176,26 @@
             id="direccion"
             name="direccion"
             [(ngModel)]="proveedorActual.direccion"
-            rows="3"></textarea>
+            (input)="validarCampo('direccion', proveedorActual.direccion)"
+            rows="3"
+            [class.invalid]="erroresValidacion.direccion"
+            placeholder="Letras, números, #, -, . permitidos"></textarea>
+          <div *ngIf="erroresValidacion.direccion" class="error">
+            {{ erroresValidacion.direccion }}
+          </div>
         </div>
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="cerrarFormulario()">
             Cancelar
           </button>
-          <button 
-            type="submit" 
-            class="btn btn-primary" 
-            [disabled]="form.invalid">
-            {{ esEdicion ? 'Actualizar' : 'Crear' }}
+          <!-- Cambia esta línea en el botón de enviar -->
+<button 
+  type="submit" 
+  class="btn btn-primary" 
+  [class.btn-disabled]="!formularioCompleto() || tieneErrores()"
+  [disabled]="!formularioCompleto() || tieneErrores()">
+  {{ esEdicion ? 'Actualizar' : 'Crear' }}
           </button>
         </div>
       </form>

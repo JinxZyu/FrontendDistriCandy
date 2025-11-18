@@ -46,7 +46,8 @@
         <span>Gestión Proveedores</span>
       </button>
       
-      <!-- <button 
+      <!-- ✅ CAMBIO 1: Descomentar este botón -->
+      <button 
         class="menu-button"
         [class.active]="selectedView === 'bodega'"
         (click)="changeView('bodega')">
@@ -56,7 +57,7 @@
         <span>Gestión Bodegas</span>
       </button>
       
-      <button 
+      <!-- <button 
         class="menu-button"
         [class.active]="selectedView === 'venta'"
         (click)="changeView('venta')">
@@ -120,11 +121,12 @@
         <app-proveedor></app-proveedor>
       </div>
       
-      <!-- <div *ngIf="selectedView === 'bodega'" class="view-content">
+      <!-- ✅ CAMBIO 2: Descomentar esta sección -->
+      <div *ngIf="selectedView === 'bodega'" class="view-content">
         <app-bodega></app-bodega>
       </div>
       
-      <div *ngIf="selectedView === 'venta'" class="view-content">
+      <!-- <div *ngIf="selectedView === 'venta'" class="view-content">
         <app-venta></app-venta>
       </div>
       

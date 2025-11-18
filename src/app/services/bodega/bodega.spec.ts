@@ -1,16 +1,19 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { BodegaService } from './bodega';
 
-import { Bodega } from './bodega';
-
-describe('Bodega', () => {
-  let service: Bodega;
+describe('BodegaService', () => {
+  let service: BodegaService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(Bodega);
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [BodegaService]
+    });
+    service = TestBed.inject(BodegaService);
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
-});
+})
