@@ -52,7 +52,6 @@ export class EnvioService {
   }
 
   crearEnvio(request: EnvioRequest): Observable<EnvioResponse> {
-    // Si no viene número de guía, generarlo automáticamente
     const envioData = {
       ...request,
       numeroGuia: request.numeroGuia || this.generarNumeroGuia()
@@ -87,7 +86,6 @@ export class EnvioService {
   }
 
   obtenerEnviosPorVenta(idVenta: number): Observable<EnvioResponse[]> {
-    // Esto asumiendo que tu backend tiene un endpoint para esto
     return this.http.get<EnvioResponse[]>(
       `${this.urlBase}/venta/${idVenta}`,
       { headers: this.getHeaders() }

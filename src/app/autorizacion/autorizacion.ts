@@ -107,7 +107,7 @@ export class AutorizacionComponent {
       },
       error: (error: any) => {
         this.cargando = false;
-        this.mostrarNotif('error', 'Error al conectar con el servidor. Verifica que el backend esté corriendo.');
+        this.mostrarNotif('error', 'Error los datos son incorrectos.');
       }
     });
   }

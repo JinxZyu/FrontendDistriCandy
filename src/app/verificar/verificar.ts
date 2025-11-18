@@ -8,7 +8,7 @@ import { TransaccionService, TransaccionRequest } from '../services/transaccion/
 import { BancoService, Banco } from '../services/banco/banco';
 import { FranquiciaService, Franquicia } from '../services/franquicia/franquicia';
 import { FormatoPrecioPipe } from '../pipes/formato-precio-pipe';
-import { OrdenVentaEnvioService } from '../services/OrdenVentaEnvioService/orden-venta-envio-service';
+
 
 interface ProductoCheckout {
   idProducto: number;
@@ -46,7 +46,6 @@ export class VerificarComponent implements OnInit {
     costoEnvio: 5000, 
     total: 0
   };
-  
   isLoading: boolean = false;
   errorMessage: string | null = null;
   idOrdenVenta: number | null = null;
@@ -56,7 +55,7 @@ export class VerificarComponent implements OnInit {
     { id: 1, nombre: 'Natural', descripcion: 'Persona natural' },
     { id: 2, nombre: 'Jurídico', descripcion: 'Persona jurídica/empresa' }
   ];
-  
+
   tipoTarjetaDetectada: 'visa' | 'mastercard' | 'amex' | 'desconocida' = 'desconocida';
   longitudMaxCvv: number = 3;
   placeholderCvv: string = '123';
@@ -86,8 +85,7 @@ export class VerificarComponent implements OnInit {
     private ordenVentaService: OrdenVentaService,
     private transaccionService: TransaccionService,
     private bancoService: BancoService,
-    private franquiciaService: FranquiciaService,
-    private ordenVentaEnvioService: OrdenVentaEnvioService
+    private franquiciaService: FranquiciaService
   ) {}
 
   ngOnInit(): void {
@@ -103,7 +101,7 @@ export class VerificarComponent implements OnInit {
       nombreTitular: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
       numeroTarjeta: ['', [Validators.required, Validators.minLength(15)]],
       cvv: ['', [Validators.required, Validators.pattern(/^[0-9]{3,4}$/)]],
-      tipoDocumento: ['', Validators.required],  // ✅ AGREGADO
+      tipoDocumento: ['', Validators.required],  
       documento: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
       idFranquicia: ['', Validators.required],
       mesVencimiento: ['', Validators.required],
@@ -113,7 +111,7 @@ export class VerificarComponent implements OnInit {
     this.pseForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
       apellidos: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
-      tipoDocumento: ['', Validators.required],  // ✅ AGREGADO
+      tipoDocumento: ['', Validators.required],  
       documento: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
       idBanco: ['', Validators.required]
     });
@@ -123,7 +121,6 @@ export class VerificarComponent implements OnInit {
     this.bancoService.obtenerBancosActivos().subscribe({
       next: (bancos) => {
         this.bancos = bancos;
-        console.log('Bancos cargados:', this.bancos);
       },
       error: (error) => {
         console.error('Error al cargar bancos:', error);
@@ -136,10 +133,8 @@ export class VerificarComponent implements OnInit {
     this.franquiciaService.obtenerFranquiciasActivas().subscribe({
       next: (franquicias) => {
         this.franquicias = franquicias;
-        console.log('Franquicias cargadas:', this.franquicias);
       },
       error: (error) => {
-        console.error('Error al cargar franquicias:', error);
         this.errorMessage = 'Error al cargar lista de franquicias';
       }
     });
@@ -158,7 +153,6 @@ export class VerificarComponent implements OnInit {
       this.resumen.productos = productos;
       this.calcularTotales();
     } catch (error) {
-      console.error('Error al cargar carrito:', error);
       this.errorMessage = 'Error al cargar los datos del carrito';
     }
   }
@@ -174,6 +168,7 @@ export class VerificarComponent implements OnInit {
       this.resumen.subtotal += precioOriginal;
       this.resumen.descuentoTotal += descuento;
     });
+
     this.resumen.total = this.resumen.subtotal - this.resumen.descuentoTotal + this.resumen.costoEnvio;
   }
 
@@ -197,7 +192,6 @@ export class VerificarComponent implements OnInit {
     this.idCliente = this.usuarioService.obtenerId();
     
     if (!this.idCliente) {
-      console.error('No se pudo obtener el ID del usuario');
       this.errorMessage = 'No se pudo identificar al cliente. Por favor inicia sesión nuevamente.';
     }
   }
@@ -221,10 +215,8 @@ export class VerificarComponent implements OnInit {
   alCambiarNumeroTarjeta(): void {
     const control = this.tarjetaCreditoForm.get('numeroTarjeta');
     if (!control) return;
-
     let valor = control.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     this.tipoTarjetaDetectada = this.detectarTipoTarjeta(valor);
-
     let longitudMaxima = 16;
     this.longitudMaxCvv = 3;
     this.placeholderCvv = '123';
@@ -241,6 +233,7 @@ export class VerificarComponent implements OnInit {
 
     const valorFormateado = valor.match(/.{1,4}/g)?.join(' ') || valor;
     control.setValue(valorFormateado, { emitEvent: false });
+
     const cvvControl = this.tarjetaCreditoForm.get('cvv');
     if (cvvControl) {
       cvvControl.setValidators([
@@ -254,7 +247,6 @@ export class VerificarComponent implements OnInit {
   alCambiarCvv(): void {
     const cvvControl = this.tarjetaCreditoForm.get('cvv');
     if (!cvvControl) return;
-
     let valor = (cvvControl.value || '').replace(/[^0-9]/gi, '');
     if (valor.length > this.longitudMaxCvv) {
       valor = valor.substring(0, this.longitudMaxCvv);
@@ -299,7 +291,6 @@ export class VerificarComponent implements OnInit {
     if (this.metodoPagoSeleccionado === 'pse') {
       this.marcarCamposComoTocados(this.pseForm);
       if (this.pseForm.invalid) {
-        console.log('Formulario PSE inválido:');
         Object.keys(this.pseForm.controls).forEach(key => {
           const control = this.pseForm.get(key);
           if (control?.invalid) {
@@ -321,10 +312,6 @@ export class VerificarComponent implements OnInit {
     this.crearOrdenVenta();
   }
 
-  
-
-  
-
   private crearOrdenVenta(): void {
     const detalles: DetalleVentaRequest[] = this.resumen.productos.map(producto => ({
       id_producto: producto.idProducto,
@@ -340,9 +327,7 @@ export class VerificarComponent implements OnInit {
 
     this.ordenVentaService.crearOrdenVenta(ordenRequest).subscribe({
       next: (ordenCreada) => {
-        console.log('Orden creada:', ordenCreada);
-        this.idOrdenVenta = ordenCreada.idVenta;
-        
+        this.idOrdenVenta = ordenCreada.idVenta; 
         if (this.metodoPagoSeleccionado === 'pse') {
           this.simularPSE();
         } else {
@@ -350,7 +335,6 @@ export class VerificarComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error al crear orden:', error);
         this.errorMessage = error.error?.message || 'Error al crear la orden de venta';
         this.isLoading = false;
       }
@@ -371,10 +355,10 @@ export class VerificarComponent implements OnInit {
 
       const transaccionRequest: TransaccionRequest = {
         id_venta: this.idOrdenVenta,
-        id_metodo_pago: 2, // 2 = Tarjeta de crédito
-        id_tipo_cliente: 1, // Siempre Natural para tarjetas
-        id_franquicia: Number(formValue.idFranquicia), // ID de franquicia
-        tipo_documento: formValue.tipoDocumento,  // ✅ AGREGADO
+        id_metodo_pago: 2, 
+        id_tipo_cliente: 1, 
+        id_franquicia: Number(formValue.idFranquicia), 
+        tipo_documento: formValue.tipoDocumento, 
         identificacion: formValue.documento,
         valor_tx: this.resumen.total
       };
@@ -391,7 +375,6 @@ export class VerificarComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error en transacción:', error);
           this.errorMessage = error.error?.error || 'Error al procesar el pago';
           this.pantallaActual = 'checkout';
           this.isLoading = false;
@@ -414,10 +397,10 @@ export class VerificarComponent implements OnInit {
 
       const transaccionRequest: TransaccionRequest = {
         id_venta: this.idOrdenVenta,
-        id_metodo_pago: 1, // 1 = PSE
+        id_metodo_pago: 1, 
         id_tipo_cliente: this.idTipoCliente,
-        id_banco: Number(formValue.idBanco), // ID de banco
-        tipo_documento: formValue.tipoDocumento,  // ✅ AGREGADO
+        id_banco: Number(formValue.idBanco), 
+        tipo_documento: formValue.tipoDocumento,  
         identificacion: formValue.documento,
         valor_tx: this.resumen.total
       };
@@ -434,7 +417,6 @@ export class VerificarComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error en transacción PSE:', error);
           this.errorMessage = error.error?.error || 'Error al procesar el pago con PSE';
           this.pantallaActual = 'checkout';
           this.isLoading = false;
@@ -442,8 +424,6 @@ export class VerificarComponent implements OnInit {
       });
     }, 3000);
   }
-
-  
 
   private limpiarCarrito(): void {
     localStorage.removeItem('carrito');
