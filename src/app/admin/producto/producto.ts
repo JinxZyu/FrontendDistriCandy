@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductoService, Producto, ProductoRequest } from '../../services/producto/producto';
 import { CategoriaService, Categoria } from '../../services/categoria/categoria';
+import { ProductoProveedorService, ProductoProveedorRequest } from '../../services/productoProveedor/producto-proveedor';
+import { ProveedorService, Proveedor } from '../../services/proveedor/proveedor';
 
 @Component({
   selector: 'app-producto',
@@ -14,6 +16,7 @@ import { CategoriaService, Categoria } from '../../services/categoria/categoria'
 export class ProductoComponent implements OnInit {
   productos: Producto[] = [];
   categorias: Categoria[] = [];
+  proveedores: Proveedor[] = [];
   
   productoActual: any = {
     referencia: '',
@@ -26,28 +29,115 @@ export class ProductoComponent implements OnInit {
     idsCategorias: [],
     estado: 1
   };
+
+  pasoActual: 'producto' | 'proveedor' = 'producto';
+  productoCreado: Producto | null = null;
+  referenciaExiste = false;
+  verificandoReferencia = false;
+
+  compraActual: any = {
+    idProveedor: null,
+    precioCompra: 0,
+    cantidad: 0,
+    fechaCompra: new Date().toISOString().split('T')[0]
+  };
+
   mostrarFormulario = false;
   esEdicion = false;
   mensaje = '';
   tipoMensaje = '';
   cargando = true;
-
+  procesandoCompra = false;
+  
   erroresValidacion: any = {};
 
   constructor(
     private productoService: ProductoService,
-    private categoriaService: CategoriaService
+    private categoriaService: CategoriaService,
+    private productoProveedorService: ProductoProveedorService,
+    private proveedorService: ProveedorService
   ) {}
 
   ngOnInit(): void {
     this.cargarProductos();
     this.cargarCategorias();
+    this.cargarProveedores();
+    this.setFechaActual();
+  }
+
+  async crearProductoYContinuar(): Promise<void> {
+    const request: any = {
+      nombre: this.productoActual.nombre.trim(),
+      referencia: this.productoActual.referencia.trim(),
+      descripcion: this.productoActual.descripcion?.trim() || '',
+      precio_unitario: Number(this.productoActual.precioUnitario),
+      existencia: 0,
+      id_categoria: this.productoActual.idsCategorias.map((id: any) => Number(id))
+    };
+
+    // Campos opcionales
+    if (this.productoActual.valorDescuento && this.productoActual.valorDescuento > 0) {
+      request.valor_descuento = Number(this.productoActual.valorDescuento);
+    }
+
+    if (this.productoActual.fotoProducto?.trim()) {
+      request.foto_producto = this.productoActual.fotoProducto.trim();
+    }
+
+    console.log('Request crear producto:', request);
+
+    try {
+      const response = await this.productoService.crearProducto(request).toPromise();
+      console.log('Respuesta crear producto COMPLETA:', response);
+      
+      // MANEJO MEJORADO DE LA RESPUESTA
+      if (response && (response.exito || response.success)) {
+        // Crear el objeto producto a partir de la respuesta
+        this.productoCreado = {
+          idProducto: response.producto?.idProducto || response.idProducto,
+          nombre: response.producto?.nombre || response.nombre || this.productoActual.nombre,
+          referencia: response.producto?.referencia || response.referencia || this.productoActual.referencia,
+          descripcion: response.producto?.descripcion || response.descripcion || this.productoActual.descripcion,
+          precioUnitario: response.producto?.precioUnitario || response.precioUnitario || this.productoActual.precioUnitario,
+          valorDescuento: response.producto?.valorDescuento || response.valorDescuento || this.productoActual.valorDescuento,
+          existencia: response.producto?.existencia || response.existencia || 0,
+          imagen: response.producto?.imagen || response.fotoProducto || this.productoActual.fotoProducto,
+          estado: response.producto?.estado || response.estado || 1
+        };
+        
+        console.log('Producto creado procesado:', this.productoCreado);
+        
+        // VALIDACIÓN CRÍTICA del ID
+        if (!this.productoCreado.idProducto) {
+          console.error('ERROR: Producto creado pero sin ID. Respuesta completa:', response);
+          this.mostrarMensaje('Error: El producto se creó pero no se recibió un ID válido. Intenta nuevamente.', 'error');
+          return;
+        }
+        
+        this.mostrarMensaje('Producto creado exitosamente. Ahora relaciona con el proveedor', 'success');
+        this.pasoActual = 'proveedor';
+      } else {
+        const errorMsg = response?.mensaje || response?.error || 'No se pudo crear el producto';
+        throw new Error(errorMsg);
+      }
+    } catch (error: any) {
+      console.error('Error completo al crear producto:', error);
+      const mensajeError = error.error?.mensaje || error.message || 'Error al crear producto';
+      this.mostrarMensaje(mensajeError, 'error');
+      throw error;
+    }
+  }
+
+  setFechaActual(): void {
+    const hoy = new Date();
+    this.compraActual.fechaCompra = hoy.toISOString().split('T')[0];
   }
 
   cargarCategorias(): void {
     this.categoriaService.obtenerTodas().subscribe({
       next: (data: Categoria[]) => {
         this.categorias = data.filter(c => c.estado === 1);
+        console.log('Categorías cargadas:', this.categorias);
       },
       error: (error: any) => {
         console.error('Error al cargar categorías:', error);
@@ -84,6 +174,15 @@ export class ProductoComponent implements OnInit {
       idsCategorias: [],
       estado: 1
     };
+    this.compraActual = {
+      idProveedor: null,
+      precioCompra: 0,
+      cantidad: 0,
+      fechaCompra: new Date().toISOString().split('T')[0]
+    };
+    this.pasoActual = 'producto';
+    this.referenciaExiste = false;
+    this.productoCreado = null;
     this.esEdicion = false;
     this.mostrarFormulario = true;
     this.limpiarErrores();
@@ -96,13 +195,19 @@ export class ProductoComponent implements OnInit {
       valorDescuento: producto.valorDescuento || 0,
       idsCategorias: producto.categorias?.map(c => c.idCategoria) || []
     };
+    this.pasoActual = 'producto';
     this.esEdicion = true;
     this.mostrarFormulario = true;
     this.limpiarErrores();
   }
 
+  
   cerrarFormulario(): void {
     this.mostrarFormulario = false;
+    this.pasoActual = 'producto';
+    this.productoCreado = null;
+    this.referenciaExiste = false;
+    this.procesandoCompra = false;
     this.productoActual = {
       referencia: '',
       nombre: '',
@@ -114,113 +219,180 @@ export class ProductoComponent implements OnInit {
       idsCategorias: [],
       estado: 1
     };
+    this.compraActual = {
+      idProveedor: null,
+      precioCompra: 0,
+      cantidad: 0,
+      fechaCompra: new Date().toISOString().split('T')[0]
+    };
     this.limpiarErrores();
   }
 
-  // NUEVO: Método para verificar si una categoría está seleccionada
-  isCategoriaSeleccionada(idCategoria: number | undefined): boolean {
-    if (!idCategoria) return false;
-    return this.productoActual.idsCategorias.includes(Number(idCategoria));
-  }
-
-  // NUEVO: Método para agregar categoría desde el dropdown
-  agregarCategoria(idCategoria: string): void {
-    if (idCategoria && idCategoria !== '') {
-      const id = Number(idCategoria);
-      if (!this.productoActual.idsCategorias.includes(id)) {
-        this.productoActual.idsCategorias.push(id);
-      }
-    }
-  }
-
-  // NUEVO: Método para remover categoría
-  removerCategoria(idCategoria: number): void {
-    const index = this.productoActual.idsCategorias.indexOf(Number(idCategoria));
-    if (index > -1) {
-      this.productoActual.idsCategorias.splice(index, 1);
-    }
-  }
-
-  // NUEVO: Obtener nombre de categoría por ID
-  getNombreCategoria(idCategoria: number): string {
-    const categoria = this.categorias.find(c => c.idCategoria === Number(idCategoria));
-    return categoria ? categoria.nombre : 'Desconocida';
-  }
-
-  // Método para obtener nombres de categorías seleccionadas
-  getCategoriasSeleccionadas(): string {
-    if (!this.productoActual.idsCategorias || this.productoActual.idsCategorias.length === 0) {
-      return 'Ninguna categoría seleccionada';
-    }
-    
-    const nombresCategories = this.productoActual.idsCategorias
-      .map((id: number) => {
-        const categoria = this.categorias.find(c => c.idCategoria === Number(id));
-        return categoria ? categoria.nombre : '';
-      })
-      .filter((nombre: string) => nombre !== '');
-    
-    return nombresCategories.join(', ');
-  }
-
-  validarReferencia(referencia: string): boolean {
-    const referenciaRegex = /^[a-zA-Z0-9\-\.]+$/;
-    return referenciaRegex.test(referencia);
-  }
-
-  validarNombre(nombre: string): boolean {
-    const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-\.]+$/;
-    return nombreRegex.test(nombre);
-  }
-
-  crearProducto(): void {
+  async continuarAPasoProveedor(): Promise<void> {
     if (!this.validarFormulario()) {
       this.mostrarMensaje('Por favor corrige los errores en el formulario', 'error');
       return;
     }
 
-    // CRÍTICO: Backend espera "id_categoria" según @JsonProperty en ProductoRequest.java
-    const request: any = {
-      nombre: this.productoActual.nombre,
-      referencia: this.productoActual.referencia,
-      descripcion: this.productoActual.descripcion || '',
-      precio_unitario: Number(this.productoActual.precioUnitario),
-      existencia: 0,
-      id_categoria: this.productoActual.idsCategorias.map((id: any) => Number(id))
+    this.verificandoReferencia = true;
+
+    try {
+      const response = await this.productoProveedorService
+        .verificarReferencia(this.productoActual.referencia)
+        .toPromise();
+
+      console.log('Respuesta verificación referencia:', response);
+
+      if (response?.existe && response.producto) {
+        this.referenciaExiste = true;
+        this.productoCreado = {
+          ...response.producto,
+          imagen: response.producto.fotoProducto || ''
+        } as Producto;
+        this.mostrarMensaje('Referencia encontrada. Completa los datos del proveedor', 'success');
+        this.pasoActual = 'proveedor';
+      } else {
+        this.referenciaExiste = false;
+        await this.crearProductoYContinuar();
+      }
+    } catch (error: any) {
+      console.error('Error al verificar referencia:', error);
+      this.referenciaExiste = false;
+      await this.crearProductoYContinuar();
+    } finally {
+      this.verificandoReferencia = false;
+    }
+  }
+
+  async registrarCompraProveedor(): Promise<void> {
+    if (this.procesandoCompra) {
+      console.log('Ya se está procesando una compra');
+      return;
+    }
+
+    // Validación MEJORADA con logs detallados
+    console.log('Validando compra - productoCreado:', this.productoCreado);
+    console.log('Validando compra - idProducto:', this.productoCreado?.idProducto);
+
+    if (!this.validarFormularioProveedor()) {
+      this.mostrarMensaje('Por favor completa todos los campos del proveedor correctamente', 'error');
+      return;
+    }
+
+    // Validación MÁS ESTRICTA del producto
+    if (!this.productoCreado) {
+      console.error('Error: productoCreado es null/undefined');
+      this.mostrarMensaje('Error: No se encontró información del producto creado', 'error');
+      return;
+    }
+
+    let idProducto = Number(this.productoCreado.idProducto);
+
+    // FIX DE EMERGENCIA: Si el ID es inválido, intentar recuperar por nombre
+    if (!idProducto || isNaN(idProducto) || idProducto <= 0) {
+      console.error('EMERGENCY: ID inválido, intentando recuperar...');
+      
+      // Intentar obtener el producto por nombre como último recurso
+      try {
+        const productoRecuperado = await this.productoService.buscarPorNombre(this.productoActual.nombre).toPromise();
+        if (productoRecuperado?.idProducto) {
+          console.log('Producto recuperado por nombre:', productoRecuperado);
+          this.productoCreado = productoRecuperado;
+          idProducto = Number(productoRecuperado.idProducto);
+        } else {
+          throw new Error('No se pudo recuperar el producto');
+        }
+      } catch (error) {
+        this.mostrarMensaje('Error crítico: No se pudo obtener el ID del producto. Contacta al administrador.', 'error');
+        this.procesandoCompra = false;
+        return;
+      }
+    }
+
+    // Validación final del ID después del fix
+    if (!idProducto || isNaN(idProducto) || idProducto <= 0) {
+      console.error('Error: ID de producto inválido después del fix:', idProducto);
+      console.error('Producto completo:', this.productoCreado);
+      this.mostrarMensaje('Error: ID de producto inválido. Por favor, vuelve a crear el producto.', 'error');
+      return;
+    }
+
+    this.procesandoCompra = true;
+
+    // CORRECCIÓN PRINCIPAL: Cambiar a snake_case para el backend
+    const request = {
+      id_producto: idProducto,
+      id_proveedor: Number(this.compraActual.idProveedor),
+      precio_compra: Number(this.compraActual.precioCompra),
+      cantidad: Number(this.compraActual.cantidad),
+      fecha_compra: this.compraActual.fechaCompra
     };
 
-    if (this.productoActual.valorDescuento) {
-      const descuento = Number(this.productoActual.valorDescuento);
-      if (descuento > 0) {
-        request.valor_descuento = descuento;
-      }
-    }
+    console.log('Request registrar compra CORREGIDO (snake_case):', JSON.stringify(request, null, 2));
 
-    if (this.productoActual.fotoProducto) {
-      const foto = this.productoActual.fotoProducto.trim();
-      if (foto !== '') {
-        request.foto_producto = foto;
-      }
-    }
-
-    console.log('Request a enviar:', request); // Para debug
-    console.log('Categorías:', request.id_categoria); // Para debug
-
-    this.productoService.crearProducto(request).subscribe({
-      next: (response: any) => {
-        if (response && (response.exito || response.producto)) {
-          this.mostrarMensaje(response.mensaje || 'Producto creado exitosamente', 'success');
+    this.productoProveedorService.registrarCompra(request as any).subscribe({
+      next: (response) => {
+        console.log('Respuesta registrar compra:', response);
+        if (response && response.exito) {
+          this.mostrarMensaje('Compra registrada exitosamente', 'success');
           this.cerrarFormulario();
           this.cargarProductos();
+        } else {
+          const errorMsg = response?.mensaje || response?.error || 'Error al registrar compra';
+          this.mostrarMensaje(errorMsg, 'error');
         }
+        this.procesandoCompra = false;
       },
       error: (error: any) => {
-        this.mostrarMensaje(error.error?.mensaje || 'Error al crear producto', 'error');
-        console.error('Error:', error);
+        console.error('Error completo al registrar compra:', error);
+        
+        let mensajeError = 'Error al registrar compra';
+        if (error.error?.mensaje) {
+          mensajeError = error.error.mensaje;
+        } else if (error.error?.error) {
+          mensajeError = error.error.error;
+        } else if (error.message) {
+          mensajeError = error.message;
+        }
+        
+        this.mostrarMensaje(mensajeError, 'error');
+        this.procesandoCompra = false;
       }
     });
   }
 
+  volverAPasoProducto(): void {
+    this.pasoActual = 'producto';
+    this.productoCreado = null;
+    this.referenciaExiste = false;
+  }
+
+  cargarProveedores(): void {
+    this.proveedorService.obtenerProveedores().subscribe({
+      next: (data: Proveedor[]) => {
+        this.proveedores = data.filter(p => p.estado === 1);
+        console.log('Proveedores cargados:', this.proveedores);
+      },
+      error: (error: any) => {
+        console.error('Error al cargar proveedores:', error);
+        this.proveedores = [];
+      }
+    });
+  }
+
+  validarFormularioProveedor(): boolean {
+    // Validación más robusta
+    const idProveedor = Number(this.compraActual.idProveedor);
+    const esProveedorValido = !isNaN(idProveedor) && idProveedor > 0;
+    const esPrecioValido = this.compraActual.precioCompra > 0;
+    const esCantidadValida = this.compraActual.cantidad > 0;
+    const esFechaValida = !!this.compraActual.fechaCompra;
+    
+    console.log('Validación proveedor - ID:', idProveedor, 'Válido:', esProveedorValido);
+    
+    return esProveedorValido && esPrecioValido && esCantidadValida && esFechaValida;
+  }
+  
   actualizarProducto(): void {
     if (!this.validarFormulario()) {
       this.mostrarMensaje('Por favor corrige los errores en el formulario', 'error');
@@ -228,7 +400,7 @@ export class ProductoComponent implements OnInit {
     }
 
     if (this.productoActual.idProducto) {
-      // CRÍTICO: Backend espera "id_categoria" según @JsonProperty en ProductoRequest.java
+      // CORRECCIÓN: Usar snake_case también para actualizar
       const request: any = {
         nombre: this.productoActual.nombre,
         referencia: this.productoActual.referencia,
@@ -246,7 +418,7 @@ export class ProductoComponent implements OnInit {
         request.foto_producto = this.productoActual.fotoProducto.trim();
       }
 
-      console.log('Request actualización:', request); // Para debug
+      console.log('Request actualizar producto (snake_case):', request);
 
       this.productoService.actualizarProducto(this.productoActual.idProducto, request).subscribe({
         next: (productoActualizado: Producto) => {
@@ -265,6 +437,47 @@ export class ProductoComponent implements OnInit {
     }
   }
 
+  isCategoriaSeleccionada(idCategoria: number | undefined): boolean {
+    if (!idCategoria) return false;
+    return this.productoActual.idsCategorias.includes(Number(idCategoria));
+  }
+
+  agregarCategoria(idCategoria: string): void {
+    if (idCategoria && idCategoria !== '') {
+      const id = Number(idCategoria);
+      if (!this.productoActual.idsCategorias.includes(id)) {
+        this.productoActual.idsCategorias.push(id);
+      }
+    }
+  }
+
+  removerCategoria(idCategoria: number): void {
+    const index = this.productoActual.idsCategorias.indexOf(Number(idCategoria));
+    if (index > -1) {
+      this.productoActual.idsCategorias.splice(index, 1);
+    }
+  }
+
+  getNombreCategoria(idCategoria: number): string {
+    const categoria = this.categorias.find(c => c.idCategoria === Number(idCategoria));
+    return categoria ? categoria.nombre : 'Desconocida';
+  }
+
+  getNombreProveedor(idProveedor: number): string {
+    const proveedor = this.proveedores.find(p => p.idProveedor === Number(idProveedor));
+    return proveedor ? proveedor.nombre : 'Desconocido';
+  }
+
+  validarReferencia(referencia: string): boolean {
+    const referenciaRegex = /^[a-zA-Z0-9\-\.]+$/;
+    return referenciaRegex.test(referencia);
+  }
+
+  validarNombre(nombre: string): boolean {
+    const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-\.]+$/;
+    return nombreRegex.test(nombre);
+  }
+
   validarDescripcion(descripcion: string): boolean {
     if (!descripcion) return true;
     const descripcionRegex = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-\.\,\;\:\(\)]+$/;
@@ -280,14 +493,12 @@ export class ProductoComponent implements OnInit {
     return descuento >= 0 && descuento <= precio;
   }
 
- validarFotoUrl(url: string): boolean {
-  if (!url || url.trim() === '') return true;
+  validarFotoUrl(url: string): boolean {
+    if (!url || url.trim() === '') return true;
+    return true;
+  }
+
   
-
-  const urlRegex = /^.+$/;
-  return urlRegex.test(url);
-}
-
   formularioCompleto(): boolean {
     return !!(
       this.productoActual.referencia &&
@@ -298,10 +509,12 @@ export class ProductoComponent implements OnInit {
     );
   }
 
+  
   tieneErrores(): boolean {
     return Object.keys(this.erroresValidacion).length > 0;
   }
 
+  
   validarFormulario(): boolean {
     this.limpiarErrores();
     let esValido = true;

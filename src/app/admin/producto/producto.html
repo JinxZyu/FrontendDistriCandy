@@ -97,15 +97,41 @@
     </table>
   </div>
 
-  <!-- Modal Formulario -->
+  <!-- Modal Formulario CON DOS PASOS -->
   <div *ngIf="mostrarFormulario" class="modal-overlay" (click)="cerrarFormulario()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>{{ esEdicion ? 'Editar Producto' : 'Crear Producto' }}</h2>
+        <h2>
+          {{ esEdicion ? 'Editar Producto' : 'Crear Producto' }}
+          <span *ngIf="!esEdicion" class="paso-indicator">
+            {{ pasoActual === 'producto' ? 'Paso 1/2' : 'Paso 2/2' }}
+          </span>
+        </h2>
         <button class="btn-cerrar" (click)="cerrarFormulario()">×</button>
       </div>
-      
-      <form (ngSubmit)="esEdicion ? actualizarProducto() : crearProducto()" #form="ngForm">
+
+      <!-- INDICADOR DE PROGRESO (Solo en creación) -->
+      <div *ngIf="!esEdicion" class="progress-indicator">
+        <div class="progress-step" [class.active]="pasoActual === 'producto'" [class.completed]="pasoActual === 'proveedor'">
+          <div class="step-circle">
+            <svg *ngIf="pasoActual === 'proveedor'" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="white"/>
+            </svg>
+            <span *ngIf="pasoActual === 'producto'">1</span>
+          </div>
+          <span class="step-label">Producto</span>
+        </div>
+        <div class="progress-line" [class.completed]="pasoActual === 'proveedor'"></div>
+        <div class="progress-step" [class.active]="pasoActual === 'proveedor'">
+          <div class="step-circle">
+            <span>2</span>
+          </div>
+          <span class="step-label">Proveedor</span>
+        </div>
+      </div>
+
+      <!-- PASO 1: FORMULARIO DE PRODUCTO -->
+      <form *ngIf="pasoActual === 'producto'" #formProducto="ngForm">
         <div class="form-group">
           <label for="referencia">Referencia *</label>
           <input
@@ -161,11 +187,11 @@
           </div>
         </div>
 
-        <!-- NUEVO: Selector de Categorías con Dropdown y Chips -->
+        <!-- Selector de Categorías -->
         <div class="form-group">
           <label>Categorías</label>
           
-          <!-- Selector con botón de añadir -->
+          
           <div class="categoria-selector-wrapper">
             <select 
               #categoriaSelect
@@ -191,7 +217,7 @@
             </button>
           </div>
 
-          <!-- Categorías seleccionadas como chips -->
+
           <div class="categorias-seleccionadas">
             <div 
               *ngFor="let idCategoria of productoActual.idsCategorias" 
@@ -277,14 +303,149 @@
             Cancelar
           </button>
           <button 
-            type="submit" 
+            *ngIf="esEdicion"
+            type="button"
             class="btn btn-primary" 
             [class.btn-disabled]="!formularioCompleto() || tieneErrores()"
-            [disabled]="!formularioCompleto() || tieneErrores()">
-            {{ esEdicion ? 'Actualizar' : 'Crear' }}
+            [disabled]="!formularioCompleto() || tieneErrores()"
+            (click)="actualizarProducto()">
+            Actualizar
+          </button>
+          <button 
+            *ngIf="!esEdicion"
+            type="button"
+            class="btn btn-primary" 
+            [class.btn-disabled]="!formularioCompleto() || tieneErrores() || verificandoReferencia"
+            [disabled]="!formularioCompleto() || tieneErrores() || verificandoReferencia"
+            (click)="continuarAPasoProveedor()">
+            <span *ngIf="!verificandoReferencia">Continuar →</span>
+            <span *ngIf="verificandoReferencia">Verificando...</span>
           </button>
         </div>
       </form>
+
+      <!-- PASO 2: FORMULARIO DE PROVEEDOR - SECCIÓN CORREGIDA -->
+      <div *ngIf="pasoActual === 'proveedor'" class="paso-proveedor">
+        <!-- Información del producto -->
+        <div class="producto-info-card">
+          <h3>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#10B981"/>
+            </svg>
+            {{ referenciaExiste ? 'Producto Encontrado' : 'Producto Creado' }}
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Referencia:</span>
+              <span class="info-value">{{ productoCreado?.referencia || productoActual.referencia }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Nombre:</span>
+              <span class="info-value">{{ productoCreado?.nombre || productoActual.nombre }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Precio:</span>
+              <span class="info-value">${{ (productoCreado?.precioUnitario || productoActual.precioUnitario) | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulario de proveedor -->
+        <form #formProveedor="ngForm" (ngSubmit)="registrarCompraProveedor()">
+          <h3 class="section-title">Datos de la Compra</h3>
+
+          <div class="form-group">
+            <label for="proveedor">Proveedor *</label>
+            <select
+              id="proveedor"
+              name="proveedor"
+              [(ngModel)]="compraActual.idProveedor"
+              required
+              #proveedor="ngModel"
+              [class.invalid]="proveedor.invalid && proveedor.touched">
+              <option value="" disabled selected>Seleccionar proveedor...</option>
+              <option *ngFor="let prov of proveedores" [value]="prov.idProveedor">
+                {{ prov.nombre }}
+              </option>
+            </select>
+            <div *ngIf="proveedor.invalid && proveedor.touched" class="error">
+              Debes seleccionar un proveedor
+            </div>
+            <div *ngIf="proveedores.length === 0" class="sin-categorias-disponibles">
+              <p>⚠️ No hay proveedores activos disponibles</p>
+            </div>
+            <!-- DEBUG: Muestra el valor actual -->
+            <small style="color: #666; font-size: 0.75rem;">
+              Valor seleccionado: {{ compraActual.idProveedor }}
+            </small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="precioCompra">Precio de Compra *</label>
+              <input
+                type="number"
+                id="precioCompra"
+                name="precioCompra"
+                [(ngModel)]="compraActual.precioCompra"
+                required
+                #precioCompra="ngModel"
+                min="1"
+                [class.invalid]="precioCompra.invalid && precioCompra.touched"
+                placeholder="0">
+              <div *ngIf="precioCompra.invalid && precioCompra.touched" class="error">
+                El precio de compra es requerido
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="cantidad">Cantidad *</label>
+              <input
+                type="number"
+                id="cantidad"
+                name="cantidad"
+                [(ngModel)]="compraActual.cantidad"
+                required
+                #cantidad="ngModel"
+                min="1"
+                [class.invalid]="cantidad.invalid && cantidad.touched"
+                placeholder="0">
+              <div *ngIf="cantidad.invalid && cantidad.touched" class="error">
+                La cantidad es requerida
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fechaCompra">Fecha de Compra *</label>
+            <input
+              type="date"
+              id="fechaCompra"
+              name="fechaCompra"
+              [(ngModel)]="compraActual.fechaCompra"
+              required
+              #fechaCompra="ngModel"
+              [class.invalid]="fechaCompra.invalid && fechaCompra.touched">
+            <div *ngIf="fechaCompra.invalid && fechaCompra.touched" class="error">
+              La fecha de compra es requerida
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="volverAPasoProducto()">
+              ← Volver
+            </button>
+            <button 
+              type="submit"
+              class="btn btn-primary"
+              [class.btn-disabled]="formProveedor.invalid || procesandoCompra"
+              [disabled]="formProveedor.invalid || procesandoCompra">
+              <span *ngIf="!procesandoCompra">Registrar Compra</span>
+              <span *ngIf="procesandoCompra">Procesando...</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>

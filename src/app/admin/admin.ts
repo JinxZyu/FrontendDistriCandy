@@ -7,6 +7,7 @@ import { ProveedorComponent } from './proveedor/proveedor';
 import { BodegaComponent } from './bodega/bodega';
 import { CategoriaComponent } from './categoria/categoria'; 
 import { UsuarioService } from '../services/usuario/usuario';
+import { InventarioComponent } from './inventario/inventario';
 
 @Component({
   selector: 'app-admin',
@@ -16,7 +17,8 @@ import { UsuarioService } from '../services/usuario/usuario';
     ProductoComponent,
     ProveedorComponent,
     BodegaComponent,
-    CategoriaComponent 
+    CategoriaComponent,
+    InventarioComponent 
   ],
   templateUrl: './admin.html',
   styleUrls: ['./admin.css']
@@ -51,7 +53,7 @@ export class AdminComponent implements OnInit {
       this.adminRole = 'Administrador';
     }
   }
-  
+
 
   changeView(view: string): void {
     this.selectedView = view;

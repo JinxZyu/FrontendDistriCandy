@@ -56,6 +56,16 @@ export interface RespuestaProducto {
   mensaje?: string;
   error?: string;
   producto?: Producto;
+  // Agregar estas propiedades para compatibilidad
+  idProducto?: number;
+  nombre?: string;
+  referencia?: string;
+  descripcion?: string;
+  precioUnitario?: number;
+  valorDescuento?: number;
+  existencia?: number;
+  fotoProducto?: string;
+  estado?: number;
 }
 
 @Injectable({
