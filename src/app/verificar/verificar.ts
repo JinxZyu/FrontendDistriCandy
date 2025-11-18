@@ -8,6 +8,7 @@ import { TransaccionService, TransaccionRequest } from '../services/transaccion/
 import { BancoService, Banco } from '../services/banco/banco';
 import { FranquiciaService, Franquicia } from '../services/franquicia/franquicia';
 import { FormatoPrecioPipe } from '../pipes/formato-precio-pipe';
+import { OrdenVentaEnvioService } from '../services/OrdenVentaEnvioService/orden-venta-envio-service';
 
 interface ProductoCheckout {
   idProducto: number;
@@ -34,50 +35,33 @@ interface ResumenCompra {
   styleUrl: './verificar.css'
 })
 export class VerificarComponent implements OnInit {
-  // Estados de pantalla
   pantallaActual: 'checkout' | 'pse' | 'credito' | 'exito' = 'checkout';
-  
-  // Método de pago seleccionado
   metodoPagoSeleccionado: 'credito' | 'pse' | '' = '';
-  
-  // Formularios
   tarjetaCreditoForm!: FormGroup;
   pseForm!: FormGroup;
-  
-  // Resumen de compra
   resumen: ResumenCompra = {
     productos: [],
     subtotal: 0,
     descuentoTotal: 0,
-    costoEnvio: 5000, // Costo fijo de envío $5.000
+    costoEnvio: 5000, 
     total: 0
   };
   
-  // Control de carga y errores
   isLoading: boolean = false;
   errorMessage: string | null = null;
-  
-  // Datos para transacción
   idOrdenVenta: number | null = null;
   idCliente: number | null = null;
-  idTipoCliente: number = 1; // Por defecto: Natural (1)
-  
-  // Tipos de cliente (HARDCODEADO con IDs correctos)
+  idTipoCliente: number = 1; 
   tiposCliente = [
     { id: 1, nombre: 'Natural', descripcion: 'Persona natural' },
     { id: 2, nombre: 'Jurídico', descripcion: 'Persona jurídica/empresa' }
   ];
   
-  // Detección de tipo de tarjeta (lógica frontend - NO viene de BD)
   tipoTarjetaDetectada: 'visa' | 'mastercard' | 'amex' | 'desconocida' = 'desconocida';
   longitudMaxCvv: number = 3;
   placeholderCvv: string = '123';
-  
-  // Bancos y Franquicias desde BD
   bancos: Banco[] = [];
   franquicias: Franquicia[] = [];
-  
-  // Selectores de fecha
   meses = [
     { valor: '01', nombre: 'Enero' },
     { valor: '02', nombre: 'Febrero' },
@@ -102,7 +86,8 @@ export class VerificarComponent implements OnInit {
     private ordenVentaService: OrdenVentaService,
     private transaccionService: TransaccionService,
     private bancoService: BancoService,
-    private franquiciaService: FranquiciaService
+    private franquiciaService: FranquiciaService,
+    private ordenVentaEnvioService: OrdenVentaEnvioService
   ) {}
 
   ngOnInit(): void {
@@ -189,8 +174,6 @@ export class VerificarComponent implements OnInit {
       this.resumen.subtotal += precioOriginal;
       this.resumen.descuentoTotal += descuento;
     });
-
-    // Total = Subtotal - Descuentos + Envío
     this.resumen.total = this.resumen.subtotal - this.resumen.descuentoTotal + this.resumen.costoEnvio;
   }
 
@@ -222,22 +205,19 @@ export class VerificarComponent implements OnInit {
   seleccionarMetodoPago(tipo: 'credito' | 'pse'): void {
     this.metodoPagoSeleccionado = tipo;
     this.errorMessage = null;
-    
-    // Resetear formularios
     if (tipo === 'credito') {
       this.pseForm.reset();
       this.pseForm.markAsUntouched();
       this.pseForm.markAsPristine();
-      this.idTipoCliente = 1; // Tarjeta siempre es Natural
+      this.idTipoCliente = 1; 
     } else {
       this.tarjetaCreditoForm.reset();
       this.tarjetaCreditoForm.markAsUntouched();
       this.tarjetaCreditoForm.markAsPristine();
-      this.idTipoCliente = 1; // Resetear a Natural
+      this.idTipoCliente = 1; 
     }
   }
 
-  // Manejo de tarjeta de crédito
   alCambiarNumeroTarjeta(): void {
     const control = this.tarjetaCreditoForm.get('numeroTarjeta');
     if (!control) return;
@@ -261,8 +241,6 @@ export class VerificarComponent implements OnInit {
 
     const valorFormateado = valor.match(/.{1,4}/g)?.join(' ') || valor;
     control.setValue(valorFormateado, { emitEvent: false });
-
-    // Actualizar validador CVV
     const cvvControl = this.tarjetaCreditoForm.get('cvv');
     if (cvvControl) {
       cvvControl.setValidators([
@@ -342,6 +320,10 @@ export class VerificarComponent implements OnInit {
     this.errorMessage = null;
     this.crearOrdenVenta();
   }
+
+  
+
+  
 
   private crearOrdenVenta(): void {
     const detalles: DetalleVentaRequest[] = this.resumen.productos.map(producto => ({
@@ -460,6 +442,8 @@ export class VerificarComponent implements OnInit {
       });
     }, 3000);
   }
+
+  
 
   private limpiarCarrito(): void {
     localStorage.removeItem('carrito');
