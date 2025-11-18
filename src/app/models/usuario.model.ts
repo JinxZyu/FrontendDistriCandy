@@ -9,7 +9,14 @@ export interface Usuario {
   nombre_completo: string;
   tipo_usuario: number;
   esAdmin?: boolean;
+  username?: string;
+  celular?: string;
+  nombre?: string;
+  apellido?: string;
+  informacion_adicional?:string;
 }
+
+
 
 export interface CredencialesLogin {
   correo: string;

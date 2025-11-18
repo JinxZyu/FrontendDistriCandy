@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../services/usuario/usuario';
 import { ProductoService, Producto } from '../services/producto/producto';
 import { FormatoPrecioPipe } from '../pipes/formato-precio-pipe';
+import { PerfilService } from '../services/perfil/perfil';
 
 interface ProductoCarrito extends Producto {
   cantidad: number;
@@ -21,29 +22,22 @@ interface ProductoCarrito extends Producto {
 export class CarritoComponent implements OnInit {
   nombreUsuario: string = '';
   carrito: ProductoCarrito[] = [];
-  
-  // Totales
   subtotal: number = 0;
   descuentoTotal: number = 0;
   total: number = 0;
-  
-  // Notificaciones
   mostrarNotificacion = false;
   tipoNotificacion: 'success' | 'error' | 'warning' = 'success';
   mensajeNotificacion = '';
-
-  // Modal de confirmación
   mostrarModalEliminar = false;
   productoAEliminar: ProductoCarrito | null = null;
   mostrarModalVaciar = false;
-
-  // Estado del carrito
   carritoVacio: boolean = true;
 
   constructor(
     private router: Router,
     private usuarioService: UsuarioService,
-    private productoService: ProductoService
+    private productoService: ProductoService,
+     private perfilService: PerfilService 
   ) {
     const usuario = this.usuarioService.obtenerUsuario();
     this.nombreUsuario = usuario?.nombre_completo || 'Usuario';
@@ -94,10 +88,37 @@ export class CarritoComponent implements OnInit {
     return Math.round(producto.valorDescuento);
   }
 
+  validarDireccionAntesDeContinuar(): void {
+  const idUsuario = this.usuarioService.obtenerId();
+  
+  if (!idUsuario) {
+    alert('Debes iniciar sesión');
+    this.router.navigate(['/autorizacion']);
+    return;
+  }
+
+  this.perfilService.obtenerPerfilCompleto(idUsuario).subscribe({
+    next: (response) => {
+      if (response.exito && response.perfil) {
+        const perfil = response.perfil;
+        
+        if (!perfil.direccion || !perfil.ciudad || !perfil.departamento) {
+          alert('Por favor completa tu dirección de envío en "Mi Cuenta" antes de continuar');
+          this.router.navigate(['/perfil']);
+          return;
+        }
+        this.router.navigate(['/verificar']);
+      }
+    },
+    error: (error) => {
+      alert('Error al verificar información. Por favor intenta de nuevo.');
+    }
+  });
+}
+
   calcularTotales(): void {
     this.subtotal = 0;
     this.descuentoTotal = 0;
-
     this.carrito.forEach(producto => {
       const precioOriginal = producto.precioUnitario * producto.cantidad;
       const precioConDescuento = producto.subtotal;
@@ -204,7 +225,6 @@ export class CarritoComponent implements OnInit {
       return;
     }
 
-    // Verificar que el usuario esté autenticado
     if (!this.usuarioService.estaAutenticado()) {
       this.mostrarNotif('error', 'Debes iniciar sesión para continuar');
       setTimeout(() => {
@@ -213,7 +233,6 @@ export class CarritoComponent implements OnInit {
       return;
     }
 
-    // Navegar a la página de verificar compra
     this.mostrarNotif('success', 'Redirigiendo a verificar compra...');
     
     setTimeout(() => {

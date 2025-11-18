@@ -26,6 +26,13 @@ export const routes: Routes = [
     canActivate: [guardRol],
     loadComponent: () => import('./verificar/verificar').then(m => m.VerificarComponent)
   },
+
+  
+    {
+    path: 'perfil',
+    canActivate: [guardRol],
+    loadComponent: () => import('./perfil/perfil').then(m => m.PerfilComponent)
+  },
 //   {
 //     path: 'registro',
 //     canActivate: [autorizacionRedirectGuard],

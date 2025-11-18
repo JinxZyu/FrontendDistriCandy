@@ -6,8 +6,10 @@ export interface TransaccionRequest {
   id_venta: number;
   id_metodo_pago: number;
   id_tipo_cliente: number;
-  franquicia?: string;
-  banco?: string;
+  id_franquicia?: number;  // ID de franquicia (Tarjeta)
+  id_banco?: number;        // ID de banco (PSE)
+  franquicia?: string;      // Nombre de franquicia (deprecated)
+  banco?: string;           // Nombre de banco (deprecated)
   tipo_documento?: string;
   identificacion: string;
   valor_tx: number;

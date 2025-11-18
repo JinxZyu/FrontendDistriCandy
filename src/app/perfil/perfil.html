@@ -1,0 +1,368 @@
+<div class="container">
+  <div class="background"></div> 
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" fill="#9b7eb5" opacity="0.15"/>
+          <circle cx="14" cy="12" r="3.5" fill="#9b7eb5"/>
+          <circle cx="26" cy="12" r="3.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="16" rx="7" ry="6.5" fill="#9b7eb5"/>
+          <ellipse cx="20" cy="25" rx="6" ry="7" fill="#9b7eb5"/>
+          <ellipse cx="14" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="26" cy="23" rx="2.5" ry="4" fill="#9b7eb5"/>
+          <ellipse cx="17" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <ellipse cx="23" cy="31" rx="2" ry="3" fill="#9b7eb5"/>
+          <circle cx="18" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <circle cx="22" cy="15.5" r="1" fill="white" opacity="0.8"/>
+          <ellipse cx="17" cy="14" rx="3" ry="4" fill="white" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="distri">Distri</span><span class="candy">Candy</span>
+      </div>
+    </div>
+    
+    <nav>
+      <a (click)="irATienda()" style="cursor: pointer;">Tienda</a>
+      <a href="#">Mis Pedidos</a>
+      <a class="active">Mi Cuenta</a>
+    </nav>
+    
+    <div class="auth-buttons">
+      <button class="cart-button" (click)="irAlCarrito()">
+        <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+        Carrito
+      </button>
+      <button (click)="cerrarSesion()">Salir</button>
+    </div>
+  </header>
+  <div class="notification-container" 
+       [class.show]="mostrarNotificacion" 
+       [class.success]="tipoNotificacion === 'success'" 
+       [class.error]="tipoNotificacion === 'error'">
+    <div class="notification-content">
+      <div class="notification-icon">
+        <svg *ngIf="tipoNotificacion === 'success'" viewBox="0 0 24 24">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        <svg *ngIf="tipoNotificacion === 'error'" viewBox="0 0 24 24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </div>
+      <p>{{ mensajeNotificacion }}</p>
+      <button class="close-btn" (click)="cerrarNotificacion()">
+        <svg viewBox="0 0 24 24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="perfil-container">
+    <div class="perfil-header">
+      <h1>Mi Perfil</h1>
+      <p class="subtitulo">Gestiona tu información personal</p>
+    </div>
+
+    <div *ngIf="cargando" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Cargando perfil...</p>
+    </div>
+
+    <div *ngIf="!cargando" class="perfil-content">
+      <div class="seccion-card">
+        <div class="seccion-header">
+          <h2>
+            <svg class="section-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            Datos Personales
+          </h2>
+          <button 
+            class="btn-editar" 
+            (click)="toggleEditarPerfil()"
+            [class.activo]="editandoPerfil">
+            {{ editandoPerfil ? 'Cancelar' : 'Editar' }}
+          </button>
+        </div>
+
+        <form [formGroup]="perfilForm" class="form-perfil">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre</label>
+              <input 
+                type="text" 
+                id="nombre" 
+                formControlName="nombre"
+                [readonly]="!editandoPerfil"
+                [class.editable]="editandoPerfil">
+              <span class="error" *ngIf="perfilForm.get('nombre')?.invalid && perfilForm.get('nombre')?.touched">
+                El nombre debe tener al menos 2 caracteres
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="apellido">Apellido</label>
+              <input 
+                type="text" 
+                id="apellido" 
+                formControlName="apellido"
+                [readonly]="!editandoPerfil"
+                [class.editable]="editandoPerfil">
+              <span class="error" *ngIf="perfilForm.get('apellido')?.invalid && perfilForm.get('apellido')?.touched">
+                El apellido debe tener al menos 2 caracteres
+              </span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="celular">Celular</label>
+              <input 
+                type="tel" 
+                id="celular" 
+                formControlName="celular"
+                [readonly]="!editandoPerfil"
+                [class.editable]="editandoPerfil"
+                maxlength="10">
+              <span class="error" *ngIf="perfilForm.get('celular')?.invalid && perfilForm.get('celular')?.touched">
+                El celular debe tener 10 dígitos
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="username">Nombre de Usuario</label>
+              <input 
+                type="text" 
+                id="username" 
+                formControlName="username"
+                [readonly]="!editandoPerfil"
+                [class.editable]="editandoPerfil">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="correo_usuario">Correo Electrónico</label>
+              <input 
+                type="email" 
+                id="correo_usuario" 
+                formControlName="correo_usuario"
+                readonly>
+              <small class="info-text">
+                Para cambiar tu correo, contacta al administrador
+              </small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="tipo_documento">Tipo de Documento</label>
+              <input 
+                type="text" 
+                id="tipo_documento" 
+                formControlName="tipo_documento"
+                readonly>
+              <small class="info-text">
+                Para cambiar estos datos, contacta al administrador
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="identificacion">Identificación</label>
+              <input 
+                type="text" 
+                id="identificacion" 
+                formControlName="identificacion"
+                readonly>
+            </div>
+          </div>
+
+          <div *ngIf="editandoPerfil" class="botones-accion">
+            <button type="button" class="btn-cancelar" (click)="toggleEditarPerfil()">
+              Cancelar
+            </button>
+            <button type="button" class="btn-guardar" (click)="guardarPerfil()">
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="seccion-card">
+        <div class="seccion-header">
+          <h2>
+            <svg class="section-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            Información de Ubicación
+          </h2>
+          <button 
+            class="btn-editar" 
+            (click)="toggleEditarUbicacion()"
+            [class.activo]="editandoUbicacion">
+            {{ editandoUbicacion ? 'Cancelar' : 'Editar' }}
+          </button>
+        </div>
+
+        <form [formGroup]="ubicacionForm" class="form-perfil">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pais">País</label>
+              <input 
+                type="text" 
+                id="pais" 
+                formControlName="pais"
+                [readonly]="!editandoUbicacion"
+                [class.editable]="editandoUbicacion"
+                placeholder="Ej: Colombia">
+            </div>
+
+            <div class="form-group">
+              <label for="departamento">Departamento</label>
+              <input 
+                type="text" 
+                id="departamento" 
+                formControlName="departamento"
+                [readonly]="!editandoUbicacion"
+                [class.editable]="editandoUbicacion"
+                placeholder="Ej: Cundinamarca">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ciudad">Ciudad</label>
+              <input 
+                type="text" 
+                id="ciudad" 
+                formControlName="ciudad"
+                [readonly]="!editandoUbicacion"
+                [class.editable]="editandoUbicacion"
+                placeholder="Ej: Bogotá">
+            </div>
+
+            <div class="form-group">
+              <label for="barrio">Barrio</label>
+              <input 
+                type="text" 
+                id="barrio" 
+                formControlName="barrio"
+                [readonly]="!editandoUbicacion"
+                [class.editable]="editandoUbicacion"
+                placeholder="Ej: Chapinero">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="direccion">Dirección</label>
+              <input 
+                type="text" 
+                id="direccion" 
+                formControlName="direccion"
+                [readonly]="!editandoUbicacion"
+                [class.editable]="editandoUbicacion"
+                placeholder="Ej: Calle 123 #45-67">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="informacion_adicional">Información Adicional (Casa/Apartamento/Torre)</label>
+              <input 
+                type="text" 
+                id="informacion_adicional" 
+                formControlName="informacion_adicional"
+                [readonly]="!editandoUbicacion"
+                [class.editable]="editandoUbicacion"
+                placeholder="Ej: Casa blanca, Torre 3 Apt 504">
+            </div>
+          </div>
+
+          <div *ngIf="editandoUbicacion" class="botones-accion">
+            <button type="button" class="btn-cancelar" (click)="toggleEditarUbicacion()">
+              Cancelar
+            </button>
+            <button type="button" class="btn-guardar" (click)="guardarUbicacion()">
+              Guardar Ubicación
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="seccion-card">
+        <div class="seccion-header">
+          <h2>
+            <svg class="section-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+            </svg>
+            Seguridad
+          </h2>
+          <button 
+            class="btn-editar" 
+            (click)="toggleCambiarClave()"
+            [class.activo]="cambiandoClave">
+            {{ cambiandoClave ? 'Cancelar' : 'Cambiar Contraseña' }}
+          </button>
+        </div>
+
+        <div *ngIf="!cambiandoClave" class="info-seguridad">
+          <svg class="shield-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+          </svg>
+          <p>Tu contraseña está protegida. Haz clic en "Cambiar Contraseña" para actualizarla.</p>
+        </div>
+
+        <form *ngIf="cambiandoClave" [formGroup]="cambiarClaveForm" class="form-perfil">
+          <div class="form-group">
+            <label for="claveActual">Contraseña Actual</label>
+            <input 
+              type="password" 
+              id="claveActual" 
+              formControlName="claveActual"
+              placeholder="Ingresa tu contraseña actual">
+            <span class="error" *ngIf="cambiarClaveForm.get('claveActual')?.invalid && cambiarClaveForm.get('claveActual')?.touched">
+              La contraseña debe tener al menos 6 caracteres
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="nuevaClave">Nueva Contraseña</label>
+            <input 
+              type="password" 
+              id="nuevaClave" 
+              formControlName="nuevaClave"
+              placeholder="Ingresa tu nueva contraseña">
+            <span class="error" *ngIf="cambiarClaveForm.get('nuevaClave')?.invalid && cambiarClaveForm.get('nuevaClave')?.touched">
+              La contraseña debe tener al menos 6 caracteres
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmarClave">Confirmar Nueva Contraseña</label>
+            <input 
+              type="password" 
+              id="confirmarClave" 
+              formControlName="confirmarClave"
+              placeholder="Confirma tu nueva contraseña">
+            <span class="error" *ngIf="cambiarClaveForm.hasError('clavesNoCoinciden') && cambiarClaveForm.get('confirmarClave')?.touched">
+              Las contraseñas no coinciden
+            </span>
+          </div>
+
+          <div class="botones-accion">
+            <button type="button" class="btn-cancelar" (click)="toggleCambiarClave()">
+              Cancelar
+            </button>
+            <button type="button" class="btn-guardar" (click)="cambiarClave()">
+              Cambiar Contraseña
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import { UsuarioService } from '../services/usuario/usuario';
 import { ProductoService, Producto } from '../services/producto/producto';
 import { CategoriaService, Categoria } from '../services/categoria/categoria';
 import { FormatoPrecioPipe } from '../pipes/formato-precio-pipe';
+import { PerfilService } from '../services/perfil/perfil';
 
 interface ProductoTienda extends Producto {
   cantidad?: number;
@@ -39,7 +40,8 @@ export class TiendaComponent implements OnInit {
     private usuarioService: UsuarioService,
     private productoService: ProductoService,
     private categoriaService: CategoriaService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private perfilService: PerfilService 
   ) {
     const usuario = this.usuarioService.obtenerUsuario();
     this.nombreUsuario = usuario?.nombre_completo || 'Usuario';
@@ -105,9 +107,7 @@ export class TiendaComponent implements OnInit {
     if (!this.busqueda.trim()) {
       return productos;
     }
-
     const busquedaLower = this.busqueda.trim().toLowerCase();
-    
     return productos.filter(p => {
       const nombre = (p.nombre || '').toLowerCase();
       const descripcion = (p.descripcion || '').toLowerCase();
@@ -301,7 +301,6 @@ export class TiendaComponent implements OnInit {
     } else {
       this.carrito.push({...producto, cantidad});
     }
-
     this.guardarCarrito();
     this.actualizarTotalCarrito();
     this.animarBotonCarrito();
@@ -353,8 +352,42 @@ export class TiendaComponent implements OnInit {
     this.usuarioService.cerrarSesion();
     this.router.navigate(['/autorizacion']);
   }
-
-  irAlCarrito(): void {
-    this.router.navigate(['/carrito']);
+   irACuenta(): void {
+    this.router.navigate(['/perfil']);
   }
+
+irAlCarrito(): void {
+  const idUsuario = this.usuarioService.obtenerId();
+  
+  if (!idUsuario) {
+    this.mostrarNotif('error', 'Debes iniciar sesión primero');
+    return;
+  }
+
+  this.perfilService.obtenerPerfilCompleto(idUsuario).subscribe({
+    next: (response) => {
+      if (response.exito && response.perfil) {
+        const perfil = response.perfil;
+        if (!perfil.direccion || !perfil.ciudad || !perfil.departamento) {
+          this.mensajeNotificacion = 'Por favor completa tu dirección de envío en "Mi Cuenta" antes de continuar con tu compra';
+          this.tipoNotificacion = 'warning';
+          this.mostrarNotificacion = true;
+          setTimeout(() => {
+            this.cerrarNotificacion();
+            this.router.navigate(['/perfil']);
+          }, 3000);
+          
+          return;
+        }
+        this.router.navigate(['/carrito']);
+      } else {
+        this.router.navigate(['/carrito']);
+      }
+    },
+    error: (error) => {
+      this.router.navigate(['/carrito']);
+    }
+  });
+}
+
 }

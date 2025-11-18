@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { UsuarioService } from '../services/usuario/usuario';
 import { OrdenVentaService, OrdenVentaRequest, DetalleVentaRequest } from '../services/ordenVenta/orden-venta';
 import { TransaccionService, TransaccionRequest } from '../services/transaccion/transaccion';
+import { BancoService, Banco } from '../services/banco/banco';
+import { FranquiciaService, Franquicia } from '../services/franquicia/franquicia';
 import { FormatoPrecioPipe } from '../pipes/formato-precio-pipe';
 
 interface ProductoCheckout {
@@ -20,6 +22,7 @@ interface ResumenCompra {
   productos: ProductoCheckout[];
   subtotal: number;
   descuentoTotal: number;
+  costoEnvio: number;
   total: number;
 }
 
@@ -32,7 +35,7 @@ interface ResumenCompra {
 })
 export class VerificarComponent implements OnInit {
   // Estados de pantalla
-  pantallaActual: 'checkout' | 'pse' | 'exito' | 'error' = 'checkout';
+  pantallaActual: 'checkout' | 'pse' | 'credito' | 'exito' = 'checkout';
   
   // Método de pago seleccionado
   metodoPagoSeleccionado: 'credito' | 'pse' | '' = '';
@@ -46,6 +49,7 @@ export class VerificarComponent implements OnInit {
     productos: [],
     subtotal: 0,
     descuentoTotal: 0,
+    costoEnvio: 5000, // Costo fijo de envío $5.000
     total: 0
   };
   
@@ -56,21 +60,24 @@ export class VerificarComponent implements OnInit {
   // Datos para transacción
   idOrdenVenta: number | null = null;
   idCliente: number | null = null;
-  idTipoCliente: number = 1; // Por defecto: Natural (1) - Solo para PSE
+  idTipoCliente: number = 1; // Por defecto: Natural (1)
   
-  // Tipos de cliente
+  // Tipos de cliente (HARDCODEADO con IDs correctos)
   tiposCliente = [
     { id: 1, nombre: 'Natural', descripcion: 'Persona natural' },
     { id: 2, nombre: 'Jurídico', descripcion: 'Persona jurídica/empresa' }
   ];
   
-  // Detección de tipo de tarjeta
+  // Detección de tipo de tarjeta (lógica frontend - NO viene de BD)
   tipoTarjetaDetectada: 'visa' | 'mastercard' | 'amex' | 'desconocida' = 'desconocida';
   longitudMaxCvv: number = 3;
   placeholderCvv: string = '123';
   
+  // Bancos y Franquicias desde BD
+  bancos: Banco[] = [];
+  franquicias: Franquicia[] = [];
+  
   // Selectores de fecha
-  dias = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
   meses = [
     { valor: '01', nombre: 'Enero' },
     { valor: '02', nombre: 'Febrero' },
@@ -87,33 +94,23 @@ export class VerificarComponent implements OnInit {
   ];
   anioActual = new Date().getFullYear();
   anios = Array.from({ length: 11 }, (_, i) => this.anioActual + i);
-  
-  // Bancos PSE
-  bancos = [
-    'Bancolombia',
-    'Banco de Bogotá',
-    'Davivienda',
-    'BBVA',
-    'Banco Popular',
-    'Banco AV Villas',
-    'Colpatria',
-    'Banco de Occidente',
-    'Banco Caja Social',
-    'Banco Agrario'
-  ];
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private usuarioService: UsuarioService,
     private ordenVentaService: OrdenVentaService,
-    private transaccionService: TransaccionService
+    private transaccionService: TransaccionService,
+    private bancoService: BancoService,
+    private franquiciaService: FranquiciaService
   ) {}
 
   ngOnInit(): void {
     this.inicializarFormularios();
     this.cargarDatosCarrito();
     this.obtenerIdCliente();
+    this.cargarBancos();
+    this.cargarFranquicias();
   }
 
   inicializarFormularios(): void {
@@ -121,7 +118,9 @@ export class VerificarComponent implements OnInit {
       nombreTitular: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
       numeroTarjeta: ['', [Validators.required, Validators.minLength(15)]],
       cvv: ['', [Validators.required, Validators.pattern(/^[0-9]{3,4}$/)]],
+      tipoDocumento: ['', Validators.required],  // ✅ AGREGADO
       documento: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
+      idFranquicia: ['', Validators.required],
       mesVencimiento: ['', Validators.required],
       anioVencimiento: ['', Validators.required]
     });
@@ -129,8 +128,35 @@ export class VerificarComponent implements OnInit {
     this.pseForm = this.fb.group({
       nombres: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
       apellidos: ['', [Validators.required, Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
+      tipoDocumento: ['', Validators.required],  // ✅ AGREGADO
       documento: ['', [Validators.required, Validators.pattern(/^[0-9]+$/)]],
-      banco: ['', Validators.required]
+      idBanco: ['', Validators.required]
+    });
+  }
+
+  cargarBancos(): void {
+    this.bancoService.obtenerBancosActivos().subscribe({
+      next: (bancos) => {
+        this.bancos = bancos;
+        console.log('Bancos cargados:', this.bancos);
+      },
+      error: (error) => {
+        console.error('Error al cargar bancos:', error);
+        this.errorMessage = 'Error al cargar lista de bancos';
+      }
+    });
+  }
+
+  cargarFranquicias(): void {
+    this.franquiciaService.obtenerFranquiciasActivas().subscribe({
+      next: (franquicias) => {
+        this.franquicias = franquicias;
+        console.log('Franquicias cargadas:', this.franquicias);
+      },
+      error: (error) => {
+        console.error('Error al cargar franquicias:', error);
+        this.errorMessage = 'Error al cargar lista de franquicias';
+      }
     });
   }
 
@@ -164,7 +190,8 @@ export class VerificarComponent implements OnInit {
       this.resumen.descuentoTotal += descuento;
     });
 
-    this.resumen.total = this.resumen.subtotal - this.resumen.descuentoTotal;
+    // Total = Subtotal - Descuentos + Envío
+    this.resumen.total = this.resumen.subtotal - this.resumen.descuentoTotal + this.resumen.costoEnvio;
   }
 
   calcularDescuentoProducto(producto: ProductoCheckout): number {
@@ -184,41 +211,30 @@ export class VerificarComponent implements OnInit {
   }
 
   obtenerIdCliente(): void {
-    // Usar el método obtenerId() del servicio que ya existe
     this.idCliente = this.usuarioService.obtenerId();
     
     if (!this.idCliente) {
       console.error('No se pudo obtener el ID del usuario');
       this.errorMessage = 'No se pudo identificar al cliente. Por favor inicia sesión nuevamente.';
-    } else {
-      console.log('ID Cliente obtenido:', this.idCliente);
     }
   }
 
   seleccionarMetodoPago(tipo: 'credito' | 'pse'): void {
     this.metodoPagoSeleccionado = tipo;
+    this.errorMessage = null;
     
-    // Resetear estado de validación del formulario que no se está usando
+    // Resetear formularios
     if (tipo === 'credito') {
       this.pseForm.reset();
-      Object.values(this.pseForm.controls).forEach(control => {
-        control.markAsUntouched();
-        control.markAsPristine();
-      });
-      // Resetear tipo de cliente al valor por defecto
-      this.idTipoCliente = 1;
-    } else if (tipo === 'pse') {
+      this.pseForm.markAsUntouched();
+      this.pseForm.markAsPristine();
+      this.idTipoCliente = 1; // Tarjeta siempre es Natural
+    } else {
       this.tarjetaCreditoForm.reset();
-      Object.values(this.tarjetaCreditoForm.controls).forEach(control => {
-        control.markAsUntouched();
-        control.markAsPristine();
-      });
-      // Resetear tipo de cliente al valor por defecto
-      this.idTipoCliente = 1;
+      this.tarjetaCreditoForm.markAsUntouched();
+      this.tarjetaCreditoForm.markAsPristine();
+      this.idTipoCliente = 1; // Resetear a Natural
     }
-    
-    // Limpiar mensaje de error
-    this.errorMessage = null;
   }
 
   // Manejo de tarjeta de crédito
@@ -281,7 +297,6 @@ export class VerificarComponent implements OnInit {
     return this.tipoTarjetaDetectada === marca;
   }
 
-  // Proceso de finalizar compra
   finalizarCompra(): void {
     if (!this.metodoPagoSeleccionado) {
       this.errorMessage = 'Por favor selecciona un método de pago';
@@ -291,7 +306,14 @@ export class VerificarComponent implements OnInit {
     if (this.metodoPagoSeleccionado === 'credito') {
       this.marcarCamposComoTocados(this.tarjetaCreditoForm);
       if (this.tarjetaCreditoForm.invalid) {
-        this.errorMessage = 'Por favor completa todos los campos de la tarjeta correctamente';
+        console.log('Formulario tarjeta inválido:');
+        Object.keys(this.tarjetaCreditoForm.controls).forEach(key => {
+          const control = this.tarjetaCreditoForm.get(key);
+          if (control?.invalid) {
+            console.log(`- ${key}: ${control.errors}`);
+          }
+        });
+        this.errorMessage = 'Por favor completa todos los campos correctamente';
         return;
       }
     }
@@ -299,7 +321,14 @@ export class VerificarComponent implements OnInit {
     if (this.metodoPagoSeleccionado === 'pse') {
       this.marcarCamposComoTocados(this.pseForm);
       if (this.pseForm.invalid) {
-        this.errorMessage = 'Por favor completa todos los campos de PSE correctamente';
+        console.log('Formulario PSE inválido:');
+        Object.keys(this.pseForm.controls).forEach(key => {
+          const control = this.pseForm.get(key);
+          if (control?.invalid) {
+            console.log(`- ${key}: ${control.errors}`);
+          }
+        });
+        this.errorMessage = 'Por favor completa todos los campos correctamente';
         return;
       }
     }
@@ -311,8 +340,6 @@ export class VerificarComponent implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = null;
-
-    // Paso 1: Crear orden de venta
     this.crearOrdenVenta();
   }
 
@@ -334,11 +361,10 @@ export class VerificarComponent implements OnInit {
         console.log('Orden creada:', ordenCreada);
         this.idOrdenVenta = ordenCreada.idVenta;
         
-        // Paso 2: Procesar transacción
         if (this.metodoPagoSeleccionado === 'pse') {
           this.simularPSE();
         } else {
-          this.procesarTransaccion();
+          this.simularRedireccionBanco();
         }
       },
       error: (error) => {
@@ -349,40 +375,47 @@ export class VerificarComponent implements OnInit {
     });
   }
 
-  private procesarTransaccion(): void {
-    if (!this.idOrdenVenta) {
-      this.errorMessage = 'Error: No se pudo crear la orden de venta';
-      this.isLoading = false;
-      return;
-    }
-
+  private simularRedireccionBanco(): void {
+    this.pantallaActual = 'credito';
     const formValue = this.tarjetaCreditoForm.value;
-    
-    const transaccionRequest: TransaccionRequest = {
-      id_venta: this.idOrdenVenta,
-      id_metodo_pago: 1, // 1 = Tarjeta de crédito
-      id_tipo_cliente: 1, // Siempre Natural para tarjetas de crédito
-      franquicia: this.tipoTarjetaDetectada,
-      identificacion: formValue.documento,
-      valor_tx: this.resumen.total
-    };
 
-    this.transaccionService.procesarTransaccion(transaccionRequest).subscribe({
-      next: (response) => {
-        if (response.exito) {
-          this.limpiarCarrito();
-          this.mostrarExito();
-        } else {
-          this.errorMessage = response.error || 'Error al procesar la transacción';
+    setTimeout(() => {
+      if (!this.idOrdenVenta) {
+        this.errorMessage = 'Error: No se pudo crear la orden de venta';
+        this.pantallaActual = 'checkout';
+        this.isLoading = false;
+        return;
+      }
+
+      const transaccionRequest: TransaccionRequest = {
+        id_venta: this.idOrdenVenta,
+        id_metodo_pago: 2, // 2 = Tarjeta de crédito
+        id_tipo_cliente: 1, // Siempre Natural para tarjetas
+        id_franquicia: Number(formValue.idFranquicia), // ID de franquicia
+        tipo_documento: formValue.tipoDocumento,  // ✅ AGREGADO
+        identificacion: formValue.documento,
+        valor_tx: this.resumen.total
+      };
+
+      this.transaccionService.procesarTransaccion(transaccionRequest).subscribe({
+        next: (response) => {
+          if (response.exito) {
+            this.limpiarCarrito();
+            this.mostrarExito();
+          } else {
+            this.errorMessage = response.error || 'Error al procesar la transacción';
+            this.pantallaActual = 'checkout';
+            this.isLoading = false;
+          }
+        },
+        error: (error) => {
+          console.error('Error en transacción:', error);
+          this.errorMessage = error.error?.error || 'Error al procesar el pago';
+          this.pantallaActual = 'checkout';
           this.isLoading = false;
         }
-      },
-      error: (error) => {
-        console.error('Error en transacción:', error);
-        this.errorMessage = error.error?.error || 'Error al procesar el pago';
-        this.isLoading = false;
-      }
-    });
+      });
+    }, 3000);
   }
 
   private simularPSE(): void {
@@ -399,9 +432,10 @@ export class VerificarComponent implements OnInit {
 
       const transaccionRequest: TransaccionRequest = {
         id_venta: this.idOrdenVenta,
-        id_metodo_pago: 2, // 2 = PSE
-        id_tipo_cliente: this.idTipoCliente, // Usar el tipo seleccionado en PSE
-        banco: formValue.banco,
+        id_metodo_pago: 1, // 1 = PSE
+        id_tipo_cliente: this.idTipoCliente,
+        id_banco: Number(formValue.idBanco), // ID de banco
+        tipo_documento: formValue.tipoDocumento,  // ✅ AGREGADO
         identificacion: formValue.documento,
         valor_tx: this.resumen.total
       };
