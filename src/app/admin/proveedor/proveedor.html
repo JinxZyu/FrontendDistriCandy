@@ -105,7 +105,7 @@
             (input)="validarCampo('nit', proveedorActual.nit)"
             maxlength="10"
             [class.invalid]="(nit.invalid && nit.touched) || erroresValidacion.nit"
-            placeholder="Solo números (máx. 10 dígitos)">
+            placeholder="máx. 10 dígitos">
           <div *ngIf="nit.invalid && nit.touched" class="error">
             El NIT es requerido
           </div>
@@ -125,7 +125,7 @@
             #nombre="ngModel"
             (input)="validarCampo('nombre', proveedorActual.nombre)"
             [class.invalid]="(nombre.invalid && nombre.touched) || erroresValidacion.nombre"
-            placeholder="Solo letras, espacios y guiones">
+            placeholder="">
           <div *ngIf="nombre.invalid && nombre.touched" class="error">
             El nombre es requerido
           </div>
@@ -144,7 +144,7 @@
             (input)="validarCampo('celular', proveedorActual.celular)"
             maxlength="10"
             [class.invalid]="erroresValidacion.celular"
-            placeholder="Solo números (máx. 10 dígitos)">
+            placeholder="máx. 10 dígitos">
           <div *ngIf="erroresValidacion.celular" class="error">
             {{ erroresValidacion.celular }}
           </div>
@@ -179,7 +179,7 @@
             (input)="validarCampo('direccion', proveedorActual.direccion)"
             rows="3"
             [class.invalid]="erroresValidacion.direccion"
-            placeholder="Letras, números, #, -, . permitidos"></textarea>
+            placeholder="Letras, números, #, -"></textarea>
           <div *ngIf="erroresValidacion.direccion" class="error">
             {{ erroresValidacion.direccion }}
           </div>

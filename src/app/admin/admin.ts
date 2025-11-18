@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-
+import { ProductoComponent } from './producto/producto';
 import { ProveedorComponent } from './proveedor/proveedor';
 import { BodegaComponent } from './bodega/bodega';
+import { CategoriaComponent } from './categoria/categoria'; 
 import { UsuarioService } from '../services/usuario/usuario';
 
 @Component({
@@ -12,8 +13,10 @@ import { UsuarioService } from '../services/usuario/usuario';
   standalone: true,
   imports: [
     CommonModule,
+    ProductoComponent,
     ProveedorComponent,
-    BodegaComponent
+    BodegaComponent,
+    CategoriaComponent 
   ],
   templateUrl: './admin.html',
   styleUrls: ['./admin.css']
@@ -48,7 +51,7 @@ export class AdminComponent implements OnInit {
       this.adminRole = 'Administrador';
     }
   }
-
+  
 
   changeView(view: string): void {
     this.selectedView = view;

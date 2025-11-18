@@ -31,7 +31,7 @@ export class ProveedorService {
 
 
   obtenerProveedores(): Observable<Proveedor[]> {
-    return this.http.get<Proveedor[]>(`${this.baseUrl}/getAll`);
+    return this.http.get<Proveedor[]>(`${this.baseUrl}/obtenerTodasProveedor`);
   }
 
 
@@ -47,10 +47,10 @@ export class ProveedorService {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-    return this.http.put<Proveedor>(`${this.baseUrl}/update/${id}`, proveedor, { headers });
+    return this.http.put<Proveedor>(`${this.baseUrl}/actualizar/${id}`, proveedor, { headers });
   }
 
-  
+
   cambiarEstado(id: number): Observable<Proveedor> {
     return this.http.post<Proveedor>(`${this.baseUrl}/cambiarEstado/${id}`, {});
   }

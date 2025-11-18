@@ -33,12 +33,12 @@ export class CategoriaService {
 
   obtenerTodas(): Observable<Categoria[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.get<Categoria[]>(`${this.urlBase}/getAll`, { headers });
+    return this.http.get<Categoria[]>(`${this.urlBase}/obtenerTodasCategorias`, { headers });
   }
 
   obtenerActivas(): Observable<Categoria[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.get<Categoria[]>(`${this.urlBase}/getActivas`, { headers });
+    return this.http.get<Categoria[]>(`${this.urlBase}/obtenerActivas`, { headers });
   }
 
   crearCategoria(categoria: CategoriaRequest): Observable<Categoria> {
@@ -58,6 +58,6 @@ export class CategoriaService {
 
   eliminarCategoria(id: number): Observable<RespuestaCategoria> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.delete<RespuestaCategoria>(`${this.urlBase}/deleteCategoria/${id}`, { headers });
+    return this.http.delete<RespuestaCategoria>(`${this.urlBase}/eliminarCategoria/${id}`, { headers });
   }
 }

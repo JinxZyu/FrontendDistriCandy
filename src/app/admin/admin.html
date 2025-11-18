@@ -25,8 +25,7 @@
   <div class="main-layout">
     <!-- Menú Lateral -->
     <aside class="sidebar">
-      <!-- TODO: Descomentar cuando los componentes estén creados -->
-      <!-- <button 
+      <button 
         class="menu-button" 
         [class.active]="selectedView === 'producto'"
         (click)="changeView('producto')">
@@ -34,7 +33,7 @@
           <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z" fill="currentColor"/>
         </svg>
         <span>Gestión Productos</span>
-      </button> -->
+      </button>
       
       <button 
         class="menu-button"
@@ -46,7 +45,6 @@
         <span>Gestión Proveedores</span>
       </button>
       
-      <!-- ✅ CAMBIO 1: Descomentar este botón -->
       <button 
         class="menu-button"
         [class.active]="selectedView === 'bodega'"
@@ -56,18 +54,19 @@
         </svg>
         <span>Gestión Bodegas</span>
       </button>
-      
-      <!-- <button 
-        class="menu-button"
-        [class.active]="selectedView === 'venta'"
-        (click)="changeView('venta')">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/>
-        </svg>
-        <span>Detalle Ventas</span>
-      </button>
-      
+
       <button 
+        class="menu-button"
+        [class.active]="selectedView === 'categoria'"
+        (click)="changeView('categoria')">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" fill="currentColor"/>
+        </svg>
+        <span>Gestión Categorías</span>
+      </button>
+
+      <!-- TODO: Descomentar cuando el componente esté creado -->
+      <!-- <button 
         class="menu-button"
         [class.active]="selectedView === 'inventario'"
         (click)="changeView('inventario')">
@@ -112,27 +111,21 @@
       </div>
 
       <!-- Cargar componentes dinámicamente según la vista seleccionada -->
-      <!-- TODO: Descomentar cuando los componentes estén creados -->
-      <!-- <div *ngIf="selectedView === 'producto'" class="view-content">
+      <div *ngIf="selectedView === 'producto'" class="view-content">
         <app-producto></app-producto>
-      </div> -->
+      </div>
       
       <div *ngIf="selectedView === 'proveedor'" class="view-content">
         <app-proveedor></app-proveedor>
       </div>
       
-      <!-- ✅ CAMBIO 2: Descomentar esta sección -->
       <div *ngIf="selectedView === 'bodega'" class="view-content">
         <app-bodega></app-bodega>
       </div>
-      
-      <!-- <div *ngIf="selectedView === 'venta'" class="view-content">
-        <app-venta></app-venta>
+
+      <div *ngIf="selectedView === 'categoria'" class="view-content">
+        <app-categoria></app-categoria>
       </div>
-      
-      <div *ngIf="selectedView === 'inventario'" class="view-content">
-        <app-inventario></app-inventario>
-      </div> -->
     </main>
   </div>
 </div>
