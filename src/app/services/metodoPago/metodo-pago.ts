@@ -29,7 +29,7 @@ export class MetodoPagoService {
 
   obtenerMetodosPago(): Observable<MetodoPago[]> {
     return this.http.get<MetodoPago[]>(
-      `${this.urlBase}/getAll`,
+      `${this.urlBase}/obtenerTodosMetodo`,
       { headers: this.getHeaders() }
     );
   }
@@ -51,7 +51,7 @@ export class MetodoPagoService {
 
   eliminarMetodoPago(id: number): Observable<MetodoPago> {
     return this.http.delete<MetodoPago>(
-      `${this.urlBase}/deleteMetodoPago/${id}`,
+      `${this.urlBase}/eliminarMetodoPago/${id}`,
       { headers: this.getHeaders() }
     );
   }

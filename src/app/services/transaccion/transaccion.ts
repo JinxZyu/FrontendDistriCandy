@@ -34,7 +34,7 @@ export class TransaccionService {
 
   procesarTransaccion(request: TransaccionRequest): Observable<TransaccionResponse> {
     return this.http.post<TransaccionResponse>(
-      `${this.urlBase}/saveTransaccion`, 
+      `${this.urlBase}/crearTransaccion`, 
       request, 
       { headers: this.getHeaders() }
     );

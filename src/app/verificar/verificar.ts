@@ -56,7 +56,7 @@ export class VerificarComponent implements OnInit {
   // Datos para transacción
   idOrdenVenta: number | null = null;
   idCliente: number | null = null;
-  idTipoCliente: number = 1; // Por defecto: Natural (1)
+  idTipoCliente: number = 1; // Por defecto: Natural (1) - Solo para PSE
   
   // Tipos de cliente
   tiposCliente = [
@@ -197,6 +197,28 @@ export class VerificarComponent implements OnInit {
 
   seleccionarMetodoPago(tipo: 'credito' | 'pse'): void {
     this.metodoPagoSeleccionado = tipo;
+    
+    // Resetear estado de validación del formulario que no se está usando
+    if (tipo === 'credito') {
+      this.pseForm.reset();
+      Object.values(this.pseForm.controls).forEach(control => {
+        control.markAsUntouched();
+        control.markAsPristine();
+      });
+      // Resetear tipo de cliente al valor por defecto
+      this.idTipoCliente = 1;
+    } else if (tipo === 'pse') {
+      this.tarjetaCreditoForm.reset();
+      Object.values(this.tarjetaCreditoForm.controls).forEach(control => {
+        control.markAsUntouched();
+        control.markAsPristine();
+      });
+      // Resetear tipo de cliente al valor por defecto
+      this.idTipoCliente = 1;
+    }
+    
+    // Limpiar mensaje de error
+    this.errorMessage = null;
   }
 
   // Manejo de tarjeta de crédito
@@ -339,7 +361,7 @@ export class VerificarComponent implements OnInit {
     const transaccionRequest: TransaccionRequest = {
       id_venta: this.idOrdenVenta,
       id_metodo_pago: 1, // 1 = Tarjeta de crédito
-      id_tipo_cliente: this.idTipoCliente, // Usar el tipo seleccionado
+      id_tipo_cliente: 1, // Siempre Natural para tarjetas de crédito
       franquicia: this.tipoTarjetaDetectada,
       identificacion: formValue.documento,
       valor_tx: this.resumen.total
@@ -378,7 +400,7 @@ export class VerificarComponent implements OnInit {
       const transaccionRequest: TransaccionRequest = {
         id_venta: this.idOrdenVenta,
         id_metodo_pago: 2, // 2 = PSE
-        id_tipo_cliente: this.idTipoCliente, // Usar el tipo seleccionado
+        id_tipo_cliente: this.idTipoCliente, // Usar el tipo seleccionado en PSE
         banco: formValue.banco,
         identificacion: formValue.documento,
         valor_tx: this.resumen.total

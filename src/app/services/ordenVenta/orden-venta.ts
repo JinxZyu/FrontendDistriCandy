@@ -30,7 +30,7 @@ export interface OrdenVentaResponse {
   providedIn: 'root'
 })
 export class OrdenVentaService {
-  private urlBase = 'http://localhost:8093/DistriCandy/api/ordenes-venta';
+  private urlBase = 'http://localhost:8093/DistriCandy/ordenesVenta';
 
   constructor(private http: HttpClient) {}
 

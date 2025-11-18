@@ -24,34 +24,6 @@
         <!-- Sección de métodos de pago -->
         <div class="payment-section">
           
-          <!-- Selector de Tipo de Cliente -->
-          <div class="tipo-cliente-section">
-            <h2 class="section-title">Tipo de Cliente</h2>
-            <div class="tipo-cliente-options">
-              @for (tipo of tiposCliente; track tipo.id) {
-                <div class="tipo-cliente-card" 
-                     [class.active]="idTipoCliente === tipo.id"
-                     (click)="idTipoCliente = tipo.id">
-                  <div class="tipo-icon">
-                    @if (tipo.id === 1) {
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="white"/>
-                      </svg>
-                    } @else {
-                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" fill="white"/>
-                      </svg>
-                    }
-                  </div>
-                  <div class="tipo-info">
-                    <span class="tipo-nombre">{{ tipo.nombre }}</span>
-                    <span class="tipo-descripcion">{{ tipo.descripcion }}</span>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-          
           <h2 class="section-title">Método de Pago</h2>
           
           <!-- Tarjeta de Crédito -->
@@ -199,6 +171,34 @@
           @if (metodoPagoSeleccionado === 'pse') {
             <div class="payment-details active">
               <h3 class="details-title">Datos para PSE</h3>
+              
+              <!-- Selector de Tipo de Cliente para PSE -->
+              <div class="tipo-cliente-pse-section">
+                <label class="form-label">Tipo de Cliente</label>
+                <div class="tipo-cliente-options">
+                  @for (tipo of tiposCliente; track tipo.id) {
+                    <div class="tipo-cliente-card" 
+                         [class.active]="idTipoCliente === tipo.id"
+                         (click)="idTipoCliente = tipo.id">
+                      <div class="tipo-icon">
+                        @if (tipo.id === 1) {
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="white"/>
+                          </svg>
+                        } @else {
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" fill="white"/>
+                          </svg>
+                        }
+                      </div>
+                      <div class="tipo-info">
+                        <span class="tipo-nombre">{{ tipo.nombre }}</span>
+                        <span class="tipo-descripcion">{{ tipo.descripcion }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
               
               <form [formGroup]="pseForm">
                 
