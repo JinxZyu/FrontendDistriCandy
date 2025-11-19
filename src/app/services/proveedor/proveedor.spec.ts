@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ProveedorService } from './proveedor.service';
+import { ProveedorService } from './proveedor';
 
 describe('ProveedorService', () => {
   let service: ProveedorService;

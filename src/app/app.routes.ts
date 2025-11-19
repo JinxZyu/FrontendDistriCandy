@@ -41,23 +41,6 @@ path: 'admin',
   loadComponent: () => import('./admin/admin').then(m => m.AdminComponent)
 },
 
-
-//   {
-//     path: 'login',
-//     canActivate: [autorizacionRedirectGuard],
-//     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
-//   },
-//   {
-//     path: 'registro',
-//     canActivate: [autorizacionRedirectGuard],
-//     loadComponent: () => import('./registro/registro.component').then(m => m.RegistroComponent)
-//   },
-
-//   {
-//     path: 'admin',
-//     canActivate: [guardRol],
-//     loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent)
-//   },
   {
     path: 'tienda',
     canActivate: [guardRol],

@@ -35,8 +35,7 @@ export const guardRol: CanActivateFn = (
     urlActual.startsWith('/dulces') || 
     urlActual.startsWith('/tienda') || 
     urlActual.startsWith('/transaccion') || 
-    urlActual.startsWith('/perfil') || 
-    urlActual.startsWith('/mis-transacciones')
+    urlActual.startsWith('/perfil') 
   ) {
     if (rol === 'admin') {
       console.log('Es admin intentando ir a usuario, redirigiendo a admin');
@@ -50,3 +49,5 @@ export const guardRol: CanActivateFn = (
   console.log('Ruta sin restricciones, permitiendo acceso');
   return true;
 };
+
+
